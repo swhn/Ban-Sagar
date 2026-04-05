@@ -7,6 +7,7 @@ import { AddSlang } from './pages/AddSlang';
 import { Dashboard } from './pages/Dashboard';
 import { SlangDetail } from './pages/SlangDetail';
 import { EditSlang } from './pages/EditSlang';
+import { Leaderboard } from './pages/Leaderboard';
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="add" element={<AddSlang />} />
+            <Route path="leaderboard" element={<Leaderboard />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="slang/:id" element={<SlangDetail />} />
             <Route path="edit/:id" element={<EditSlang />} />

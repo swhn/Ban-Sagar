@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { SlangCard } from '../components/SlangCard';
-import { SlangData, SlangStatus } from '../lib/database.types';
+import { SlangData, SlangStatus, AppUser, UserRole } from '../lib/database.types';
 import { useAuth } from '../contexts/AuthContext';
-import { Loader2, ShieldAlert, Database, CheckCircle, Clock, XCircle, ClipboardList, Copy, Trash2, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Loader2, ShieldAlert, CheckCircle, Clock, XCircle, ClipboardList, Copy, Trash2, ExternalLink, Users, Shield, ShieldCheck, User, ChevronDown } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
-import { seedSlangs } from '../data/seedSlangs';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
@@ -13,15 +12,19 @@ export function Dashboard() {
   const { user, appUser, isAuthReady } = useAuth();
   const navigate = useNavigate();
 
-  const [activeMenu, setActiveMenu] = useState<'review' | 'duplicates' | 'database'>('review');
+  const [activeMenu, setActiveMenu] = useState<'review' | 'duplicates' | 'users'>('review');
   const [slangs, setSlangs] = useState<SlangData[]>([]);
   const [activeTab, setActiveTab] = useState<SlangStatus>('pending');
   const [loading, setLoading] = useState(true);
-  const [isSeeding, setIsSeeding] = useState(false);
   const [message, setMessage] = useState<{text: string, type: 'success' | 'error'} | null>(null);
 
   const [duplicates, setDuplicates] = useState<{word: string, items: SlangData[]}[]>([]);
   const [isScanning, setIsScanning] = useState(false);
+
+  // User management state
+  const [allUsers, setAllUsers] = useState<AppUser[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [roleDropdownOpen, setRoleDropdownOpen] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isAuthReady) return;
@@ -51,7 +54,6 @@ export function Dashboard() {
 
       fetchSlangs();
 
-      // Realtime subscription for dashboard
       const channel = supabase
         .channel('slangs-dashboard')
         .on('postgres_changes', {
@@ -84,7 +86,56 @@ export function Dashboard() {
         supabase.removeChannel(channel);
       };
     }
+
+    if (activeMenu === 'users' && appUser?.role === 'admin') {
+      fetchUsers();
+    }
   }, [user, appUser, isAuthReady, navigate, activeTab, activeMenu]);
+
+  // Close role dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setRoleDropdownOpen(null);
+    if (roleDropdownOpen) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [roleDropdownOpen]);
+
+  const fetchUsers = async () => {
+    setUsersLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setAllUsers(data as AppUser[]);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  const handleRoleChange = async (userId: string, newRole: UserRole) => {
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ role: newRole })
+        .eq('id', userId);
+
+      if (error) throw error;
+      setAllUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
+      setRoleDropdownOpen(null);
+      setMessage({ text: `Role updated to ${newRole}.`, type: 'success' });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error: any) {
+      console.error('Error updating role:', error);
+      setMessage({ text: `Failed to update role: ${error.message}`, type: 'error' });
+      setTimeout(() => setMessage(null), 3000);
+    }
+  };
 
   const handleApprove = async (id: string) => {
     try {
@@ -172,46 +223,19 @@ export function Dashboard() {
     }
   };
 
-  const handleSeed = async () => {
-    if (!user || !appUser) return;
+  const getRoleIcon = (role: UserRole) => {
+    switch (role) {
+      case 'admin': return <ShieldCheck className="w-4 h-4" />;
+      case 'moderator': return <Shield className="w-4 h-4" />;
+      default: return <User className="w-4 h-4" />;
+    }
+  };
 
-    setIsSeeding(true);
-    setMessage({ text: 'Checking for existing slangs...', type: 'success' });
-    try {
-      const { data: existing } = await supabase.from('slangs').select('word');
-      const existingWords = new Set((existing || []).map((s: any) => s.word.toLowerCase().trim()));
-
-      const newSlangs = seedSlangs.filter(slang => !existingWords.has(slang.word.toLowerCase().trim()));
-
-      if (newSlangs.length === 0) {
-        setMessage({ text: 'All seed words are already in the database!', type: 'success' });
-        setIsSeeding(false);
-        return;
-      }
-
-      setMessage({ text: `Seeding ${newSlangs.length} new slangs...`, type: 'success' });
-
-      const rows = newSlangs.map(slang => ({
-        word: slang.word,
-        pronunciation: slang.pronunciation || null,
-        meaning: slang.meaning,
-        meaning_burmese: slang.meaningBurmese,
-        examples: slang.examples,
-        author_id: user.id,
-        author_name: appUser.display_name || 'System Admin',
-        status: 'approved' as SlangStatus,
-      }));
-
-      const { error } = await supabase.from('slangs').insert(rows);
-      if (error) throw error;
-
-      setMessage({ text: `Successfully seeded ${newSlangs.length} slangs!`, type: 'success' });
-      setTimeout(() => setMessage(null), 3000);
-    } catch (error: any) {
-      console.error('Error seeding data:', error);
-      setMessage({ text: `Error seeding data: ${error.message || 'Unknown error'}`, type: 'error' });
-    } finally {
-      setIsSeeding(false);
+  const getRoleColor = (role: UserRole) => {
+    switch (role) {
+      case 'admin': return 'text-rose-400 bg-rose-500/15 border-rose-500/20';
+      case 'moderator': return 'text-amber-400 bg-amber-500/15 border-amber-500/20';
+      default: return 'text-sky-400 bg-sky-500/15 border-sky-500/20';
     }
   };
 
@@ -262,13 +286,13 @@ export function Dashboard() {
 
           {appUser?.role === 'admin' && (
             <button
-              onClick={() => setActiveMenu('database')}
+              onClick={() => setActiveMenu('users')}
               className={cn(
                 "flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all",
-                activeMenu === 'database' ? "bg-indigo-500/20 text-indigo-300 ring-1 ring-indigo-500/30" : "text-white/50 hover:bg-white/5 hover:text-white/80"
+                activeMenu === 'users' ? "bg-indigo-500/20 text-indigo-300 ring-1 ring-indigo-500/30" : "text-white/50 hover:bg-white/5 hover:text-white/80"
               )}
             >
-              <Database className="w-5 h-5" /> Database
+              <Users className="w-5 h-5" /> Manage Users
             </button>
           )}
         </nav>
@@ -443,29 +467,119 @@ export function Dashboard() {
           </div>
         )}
 
-        {activeMenu === 'database' && appUser?.role === 'admin' && (
+        {activeMenu === 'users' && appUser?.role === 'admin' && (
           <div className="space-y-6">
-            <div className="bg-surface-raised p-8 rounded-2xl border border-white/5">
-              <div className="flex items-start gap-5">
-                <div className="p-4 bg-amber-500/10 text-amber-400 rounded-2xl border border-amber-500/20 shrink-0">
-                  <AlertTriangle className="w-8 h-8" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-display font-bold text-white">Seed Initial Data</h3>
-                  <p className="text-text-secondary mt-2 mb-6 text-lg">
-                    Populate the database with common Myanmar slangs. This will skip any words that already exist to prevent duplicates.
-                  </p>
-                  <button
-                    onClick={handleSeed}
-                    disabled={isSeeding}
-                    className="flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-indigo-500/25 active:scale-95 disabled:opacity-70"
-                  >
-                    {isSeeding ? <Loader2 className="w-5 h-5 animate-spin" /> : <Database className="w-5 h-5" />}
-                    Seed Slangs
-                  </button>
-                </div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface-raised p-6 rounded-2xl border border-white/5">
+              <div>
+                <h2 className="text-2xl font-bold text-white">User Management</h2>
+                <p className="text-text-secondary mt-1">
+                  {allUsers.length} registered user{allUsers.length !== 1 ? 's' : ''}
+                </p>
               </div>
+              <button
+                onClick={fetchUsers}
+                disabled={usersLoading}
+                className="flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-500/10 text-indigo-400 rounded-xl hover:bg-indigo-500/20 text-sm font-semibold transition-all w-full sm:w-auto border border-indigo-500/20"
+              >
+                {usersLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Users className="w-4 h-4" />}
+                Refresh
+              </button>
             </div>
+
+            {usersLoading ? (
+              <div className="flex justify-center py-20">
+                <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
+              </div>
+            ) : allUsers.length > 0 ? (
+              <div className="space-y-3">
+                <AnimatePresence mode="popLayout">
+                  {allUsers.map((u, index) => (
+                    <motion.div
+                      key={u.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.03 }}
+                      className="flex flex-col sm:flex-row sm:items-center gap-4 p-5 bg-surface-raised rounded-2xl border border-white/5 hover:border-white/10 transition-colors"
+                    >
+                      {/* Avatar + Info */}
+                      <div className="flex items-center gap-4 flex-1 min-w-0">
+                        {u.avatar_url ? (
+                          <img src={u.avatar_url} alt="" className="w-11 h-11 rounded-full ring-2 ring-white/10 shrink-0" referrerPolicy="no-referrer" />
+                        ) : (
+                          <div className="w-11 h-11 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-sm ring-2 ring-white/10 shrink-0">
+                            {(u.display_name || u.email || 'U')[0].toUpperCase()}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="font-semibold text-white truncate">{u.display_name || 'Unnamed'}</p>
+                          <p className="text-sm text-text-secondary truncate">{u.email}</p>
+                          <p className="text-xs text-white/20 mt-0.5">Joined {new Date(u.created_at).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+
+                      {/* Role badge + dropdown */}
+                      <div className="relative shrink-0">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Don't allow changing own role
+                            if (u.id === user?.id) return;
+                            setRoleDropdownOpen(roleDropdownOpen === u.id ? null : u.id);
+                          }}
+                          disabled={u.id === user?.id}
+                          className={cn(
+                            "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all",
+                            getRoleColor(u.role),
+                            u.id === user?.id ? "opacity-60 cursor-not-allowed" : "hover:brightness-125 cursor-pointer"
+                          )}
+                        >
+                          {getRoleIcon(u.role)}
+                          {u.role}
+                          {u.id !== user?.id && <ChevronDown className="w-3.5 h-3.5" />}
+                        </button>
+
+                        <AnimatePresence>
+                          {roleDropdownOpen === u.id && (
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.95, y: -5 }}
+                              animate={{ opacity: 1, scale: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.95, y: -5 }}
+                              className="absolute right-0 top-full mt-2 z-50 bg-surface-overlay border border-white/10 rounded-xl shadow-2xl shadow-black/50 overflow-hidden min-w-[160px]"
+                            >
+                              {(['user', 'moderator', 'admin'] as UserRole[]).map(role => (
+                                <button
+                                  key={role}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRoleChange(u.id, role);
+                                  }}
+                                  className={cn(
+                                    "flex items-center gap-3 w-full px-4 py-3 text-sm font-semibold transition-all hover:bg-white/5",
+                                    u.role === role ? "text-indigo-400 bg-indigo-500/10" : "text-white/70"
+                                  )}
+                                >
+                                  {getRoleIcon(role)}
+                                  <span className="capitalize">{role}</span>
+                                  {u.role === role && <CheckCircle className="w-4 h-4 ml-auto" />}
+                                </button>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <div className="text-center py-20 bg-surface-raised rounded-2xl border border-dashed border-white/10">
+                <div className="bg-white/5 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Users className="w-10 h-10 text-white/20" />
+                </div>
+                <h3 className="text-2xl font-display font-bold text-white mb-2">No users yet</h3>
+                <p className="text-text-secondary text-lg">Users will appear here after they sign in.</p>
+              </div>
+            )}
           </div>
         )}
       </main>
