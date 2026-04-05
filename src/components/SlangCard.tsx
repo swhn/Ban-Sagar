@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ThumbsUp, ThumbsDown, Clock, User, CheckCircle, XCircle, Edit, Eye, Quote } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Clock, User, CheckCircle, XCircle, Edit, Eye, Quote, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { useAuth } from '../contexts/AuthContext';
@@ -15,7 +15,8 @@ interface SlangCardProps {
 }
 
 export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, onApprove, onReject, onEdit }) => {
-  const { user } = useAuth();
+  const { user, appUser } = useAuth();
+  const isNsfwBlurred = slang.is_nsfw && !appUser?.show_nsfw;
 
   const [userVote, setUserVote] = useState<VoteType | null>(null);
   const [optimisticUpvotes, setOptimisticUpvotes] = useState(slang.upvotes);
@@ -100,9 +101,16 @@ export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, on
         {/* Header */}
         <div className="flex justify-between items-start gap-3 mb-5">
           <div className="min-w-0">
-            <h3 className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight">
-              {slang.word}
-            </h3>
+            <div className="flex items-center gap-2.5">
+              <h3 className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight">
+                {slang.word}
+              </h3>
+              {slang.is_nsfw && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/15 shrink-0">
+                  <AlertTriangle className="w-3 h-3" /> NSFW
+                </span>
+              )}
+            </div>
             {slang.pronunciation && (
               <p className="text-base text-text-secondary font-medium mt-0.5">/{slang.pronunciation}/</p>
             )}
@@ -152,28 +160,40 @@ export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, on
         </div>
 
         {/* Content */}
-        <div className="space-y-3">
-          <div className="bg-white/[0.02] rounded-xl p-4 border border-white/[0.03]">
-            <h4 className="text-[10px] font-bold uppercase tracking-wider text-text-secondary mb-1.5">English</h4>
-            <p className="text-white/85 text-[15px] leading-relaxed">{slang.meaning}</p>
+        <div className="relative">
+          <div className={cn("space-y-3 transition-all duration-300", isNsfwBlurred && "blur-md select-none pointer-events-none")}>
+            <div className="bg-white/[0.02] rounded-xl p-4 border border-white/[0.03]">
+              <h4 className="text-[10px] font-bold uppercase tracking-wider text-text-secondary mb-1.5">English</h4>
+              <p className="text-white/85 text-[15px] leading-relaxed">{slang.meaning}</p>
+            </div>
+
+            {slang.meaning_burmese && (
+              <div className="bg-indigo-500/[0.03] rounded-xl p-4 border border-indigo-500/[0.06]">
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-indigo-400/60 mb-1.5">Burmese</h4>
+                <p className="text-white/85 text-[15px] leading-relaxed">{slang.meaning_burmese}</p>
+              </div>
+            )}
+
+            {slang.examples && slang.examples.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">Examples</h4>
+                {slang.examples.map((example, index) => (
+                  <div key={index} className="flex items-start gap-2.5 text-white/60 bg-white/[0.015] border border-white/[0.03] p-3.5 rounded-xl">
+                    <Quote className="w-4 h-4 text-indigo-500/30 shrink-0 mt-0.5" />
+                    <span className="italic text-sm leading-relaxed">{example}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          {slang.meaning_burmese && (
-            <div className="bg-indigo-500/[0.03] rounded-xl p-4 border border-indigo-500/[0.06]">
-              <h4 className="text-[10px] font-bold uppercase tracking-wider text-indigo-400/60 mb-1.5">Burmese</h4>
-              <p className="text-white/85 text-[15px] leading-relaxed">{slang.meaning_burmese}</p>
-            </div>
-          )}
-
-          {slang.examples && slang.examples.length > 0 && (
-            <div className="space-y-2">
-              <h4 className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">Examples</h4>
-              {slang.examples.map((example, index) => (
-                <div key={index} className="flex items-start gap-2.5 text-white/60 bg-white/[0.015] border border-white/[0.03] p-3.5 rounded-xl">
-                  <Quote className="w-4 h-4 text-indigo-500/30 shrink-0 mt-0.5" />
-                  <span className="italic text-sm leading-relaxed">{example}</span>
-                </div>
-              ))}
+          {isNsfwBlurred && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center px-4">
+                <AlertTriangle className="w-8 h-8 text-red-400/60 mx-auto mb-2" />
+                <p className="text-sm font-semibold text-white/70">NSFW Content</p>
+                <p className="text-xs text-white/40 mt-1">Sign in and enable NSFW in your profile to view</p>
+              </div>
             </div>
           )}
         </div>

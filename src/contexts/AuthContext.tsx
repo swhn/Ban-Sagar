@@ -9,6 +9,7 @@ interface AuthContextType {
   isAuthReady: boolean;
   login: () => Promise<void>;
   logout: () => Promise<void>;
+  toggleNsfw: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -93,8 +94,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setAppUser(null);
   }
 
+  async function toggleNsfw() {
+    if (!appUser) return;
+    const newValue = !appUser.show_nsfw;
+    setAppUser({ ...appUser, show_nsfw: newValue });
+    const { error } = await supabase
+      .from('users')
+      .update({ show_nsfw: newValue })
+      .eq('id', appUser.id);
+    if (error) {
+      console.error('Error toggling NSFW:', error);
+      setAppUser({ ...appUser, show_nsfw: !newValue });
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, appUser, isAuthReady, login, logout }}>
+    <AuthContext.Provider value={{ user, appUser, isAuthReady, login, logout, toggleNsfw }}>
       {children}
     </AuthContext.Provider>
   );

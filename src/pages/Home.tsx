@@ -2,10 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { Link } from 'react-router-dom';
 import { SlangData } from '../lib/database.types';
-import { Search, TrendingUp, Clock, ThumbsUp, Shuffle, Sparkles, BookOpen, ArrowRight, Eye } from 'lucide-react';
+import { Search, TrendingUp, Clock, ThumbsUp, Shuffle, Sparkles, BookOpen, ArrowRight, Eye, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GradientBackground } from '../components/GradientBackground';
 import { LoadingGrid } from '../components/LoadingSkeleton';
+import { useAuth } from '../contexts/AuthContext';
 import { cn } from '../lib/utils';
 
 type SortTab = 'trending' | 'latest' | 'most_upvote' | 'random';
@@ -30,6 +31,7 @@ const getTrendingScore = (slang: SlangData, period: TrendingPeriod) => {
 };
 
 export function Home() {
+  const { appUser } = useAuth();
   const [slangs, setSlangs] = useState<SlangData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -292,13 +294,33 @@ export function Home() {
             >
               <Link
                 to={`/slang/${slang.id}`}
-                className="group block h-full bg-surface-raised/80 p-5 sm:p-6 rounded-2xl border border-white/[0.04] hover:border-indigo-500/20 hover:bg-surface-raised transition-all duration-200 relative overflow-hidden active:scale-[0.98]"
+                className={cn(
+                  "group block h-full bg-surface-raised/80 p-5 sm:p-6 rounded-2xl border hover:bg-surface-raised transition-all duration-200 relative overflow-hidden active:scale-[0.98]",
+                  slang.is_nsfw ? "border-red-500/10 hover:border-red-500/20" : "border-white/[0.04] hover:border-indigo-500/20"
+                )}
               >
                 {/* Top gradient line */}
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className={cn(
+                  "absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity",
+                  slang.is_nsfw ? "via-red-500/40" : "via-indigo-500/40"
+                )} />
 
-                <div className="flex flex-col items-center justify-center text-center min-h-[80px] sm:min-h-[100px]">
-                  <h2 className="text-xl sm:text-2xl lg:text-3xl font-display font-bold text-white group-hover:text-indigo-300 transition-colors leading-tight">
+                {slang.is_nsfw && (
+                  <div className="absolute top-2.5 right-2.5">
+                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/15">
+                      <AlertTriangle className="w-2.5 h-2.5" /> NSFW
+                    </span>
+                  </div>
+                )}
+
+                <div className={cn(
+                  "flex flex-col items-center justify-center text-center min-h-[80px] sm:min-h-[100px] transition-all duration-300",
+                  slang.is_nsfw && !appUser?.show_nsfw && "blur-sm"
+                )}>
+                  <h2 className={cn(
+                    "text-xl sm:text-2xl lg:text-3xl font-display font-bold transition-colors leading-tight",
+                    slang.is_nsfw ? "text-white group-hover:text-red-300" : "text-white group-hover:text-indigo-300"
+                  )}>
                     {slang.word}
                   </h2>
                   {slang.pronunciation && (

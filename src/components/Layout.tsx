@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { BookOpen, LogIn, LogOut, Shield, PlusCircle, Sparkles, Trophy, Home, Menu, X } from 'lucide-react';
+import { BookOpen, LogIn, LogOut, Shield, PlusCircle, Sparkles, Trophy, Home, Menu, X, EyeOff, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
 export function Layout() {
-  const { user, appUser, login, logout } = useAuth();
+  const { user, appUser, login, logout, toggleNsfw } = useAuth();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -92,6 +92,20 @@ export function Layout() {
 
             {user ? (
               <div className="flex items-center gap-2.5">
+                <button
+                  onClick={toggleNsfw}
+                  title={appUser?.show_nsfw ? 'Hide NSFW content' : 'Show NSFW content'}
+                  className={cn(
+                    "p-2 rounded-lg transition-all text-xs font-semibold flex items-center gap-1.5",
+                    appUser?.show_nsfw
+                      ? "text-red-400 bg-red-500/10 hover:bg-red-500/15"
+                      : "text-white/25 hover:text-white/50 hover:bg-white/5"
+                  )}
+                >
+                  {appUser?.show_nsfw ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                  <span className="hidden lg:inline">NSFW</span>
+                </button>
+                <div className="h-6 w-px bg-white/[0.06]" />
                 <div className="flex flex-col items-end">
                   <span className="text-sm font-semibold leading-none text-white/90">{appUser?.display_name || 'User'}</span>
                   <span className="text-[10px] uppercase tracking-wider font-bold text-indigo-400 mt-0.5">{appUser?.role}</span>
@@ -177,6 +191,19 @@ export function Layout() {
                 )}
 
                 <div className="h-px bg-white/[0.06] my-2" />
+
+                {user && (
+                  <button
+                    onClick={toggleNsfw}
+                    className={cn(
+                      "flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all w-full text-left",
+                      appUser?.show_nsfw ? "text-red-400 bg-red-500/10" : "text-white/60"
+                    )}
+                  >
+                    {appUser?.show_nsfw ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                    NSFW {appUser?.show_nsfw ? 'On' : 'Off'}
+                  </button>
+                )}
 
                 {user ? (
                   <div className="flex items-center justify-between px-4 py-3">

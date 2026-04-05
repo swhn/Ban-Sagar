@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { SlangData, SlangStatus } from '../lib/database.types';
-import { Plus, X, Loader2, ArrowLeft, Edit3, CheckCircle, AlertCircle } from 'lucide-react';
+import { Plus, X, Loader2, ArrowLeft, Edit3, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
@@ -18,6 +18,7 @@ export function EditSlang() {
   const [meaningBurmese, setMeaningBurmese] = useState('');
   const [examples, setExamples] = useState<string[]>(['']);
   const [status, setStatus] = useState<SlangStatus>('pending');
+  const [isNsfw, setIsNsfw] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,6 +44,7 @@ export function EditSlang() {
           setMeaningBurmese(s.meaning_burmese || '');
           setExamples(s.examples && s.examples.length > 0 ? s.examples : ['']);
           setStatus(s.status);
+          setIsNsfw(s.is_nsfw || false);
         }
       } catch (error) {
         console.error('Error fetching slang:', error);
@@ -95,6 +97,7 @@ export function EditSlang() {
           meaning_burmese: meaningBurmese.trim(),
           examples: validExamples,
           status: status,
+          is_nsfw: isNsfw,
         })
         .eq('id', id);
 
@@ -230,6 +233,39 @@ export function EditSlang() {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* NSFW Toggle */}
+        <div>
+          <button
+            type="button"
+            onClick={() => setIsNsfw(!isNsfw)}
+            className={cn(
+              "flex items-center gap-3 w-full px-4 py-3 rounded-xl border transition-all text-left",
+              isNsfw
+                ? "bg-red-500/10 border-red-500/20"
+                : "bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04]"
+            )}
+          >
+            <div className={cn(
+              "w-10 h-6 rounded-full relative transition-all shrink-0",
+              isNsfw ? "bg-red-500/40" : "bg-white/10"
+            )}>
+              <div className={cn(
+                "absolute top-1 w-4 h-4 rounded-full transition-all",
+                isNsfw ? "left-5 bg-red-400" : "left-1 bg-white/40"
+              )} />
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <AlertTriangle className={cn("w-3.5 h-3.5", isNsfw ? "text-red-400" : "text-white/30")} />
+                <span className={cn("text-sm font-semibold", isNsfw ? "text-red-300" : "text-white/60")}>
+                  NSFW Content
+                </span>
+              </div>
+              <p className="text-[11px] text-white/30 mt-0.5">Mark if this slang contains explicit or sensitive content</p>
+            </div>
+          </button>
         </div>
 
         <div>
