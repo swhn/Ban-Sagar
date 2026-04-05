@@ -8,6 +8,7 @@ export interface AppUser {
   display_name: string | null;
   avatar_url: string | null;
   role: UserRole;
+  show_nsfw: boolean;
   created_at: string;
 }
 
@@ -26,6 +27,7 @@ export interface SlangData {
   views: number;
   view_history: Record<string, number>;
   created_at: string;
+  is_nsfw: boolean;
   updated_at: string;
 }
 

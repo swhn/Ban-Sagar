@@ -19,6 +19,7 @@ CREATE TABLE users (
   display_name TEXT,
   avatar_url TEXT,
   role user_role NOT NULL DEFAULT 'user',
+  show_nsfw BOOLEAN NOT NULL DEFAULT false,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -36,6 +37,7 @@ CREATE TABLE slangs (
   downvotes INTEGER NOT NULL DEFAULT 0 CHECK (downvotes >= 0),
   views INTEGER NOT NULL DEFAULT 0 CHECK (views >= 0),
   view_history JSONB NOT NULL DEFAULT '{}',
+  is_nsfw BOOLEAN NOT NULL DEFAULT false,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -58,6 +60,7 @@ CREATE INDEX idx_slangs_word_lower ON slangs(lower(word));
 CREATE INDEX idx_slangs_created_at ON slangs(created_at DESC);
 CREATE INDEX idx_votes_user_slang ON votes(user_id, slang_id);
 CREATE INDEX idx_votes_slang_id ON votes(slang_id);
+CREATE INDEX idx_slangs_is_nsfw ON slangs(is_nsfw);
 
 -- ============================================================
 -- 4. TRIGGERS: Auto-admin elevation
