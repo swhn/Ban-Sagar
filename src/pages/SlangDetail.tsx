@@ -8,7 +8,7 @@ import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
 
 export function SlangDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [slang, setSlang] = useState<SlangData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -17,13 +17,22 @@ export function SlangDetail() {
 
   useEffect(() => {
     const fetchSlang = async () => {
-      if (!id) return;
+      if (!slug) return;
       try {
-        const { data, error } = await supabase
+        // Try by slug first, fall back to id for old links
+        let { data, error } = await supabase
           .from('slangs')
           .select('*')
-          .eq('id', id)
+          .eq('slug', slug)
           .single();
+
+        if (error || !data) {
+          ({ data, error } = await supabase
+            .from('slangs')
+            .select('*')
+            .eq('id', slug)
+            .single());
+        }
 
         if (error) throw error;
 
@@ -32,7 +41,7 @@ export function SlangDetail() {
 
           if (!viewedRef.current) {
             viewedRef.current = true;
-            supabase.rpc('increment_view', { p_slang_id: id }).then(({ error }) => {
+            supabase.rpc('increment_view', { p_slang_id: data.id }).then(({ error }) => {
               if (error) console.error('View increment error:', error);
             });
           }
@@ -46,7 +55,7 @@ export function SlangDetail() {
     };
 
     fetchSlang();
-  }, [id]);
+  }, [slug]);
 
   const handleShare = async () => {
     const url = window.location.href;

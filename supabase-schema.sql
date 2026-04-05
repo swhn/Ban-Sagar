@@ -25,6 +25,7 @@ CREATE TABLE users (
 
 CREATE TABLE slangs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug TEXT UNIQUE,
   word TEXT NOT NULL CHECK (char_length(word) BETWEEN 1 AND 100),
   pronunciation TEXT CHECK (pronunciation IS NULL OR char_length(pronunciation) BETWEEN 1 AND 100),
   meaning TEXT NOT NULL CHECK (char_length(meaning) BETWEEN 1 AND 1000),
@@ -61,6 +62,7 @@ CREATE INDEX idx_slangs_created_at ON slangs(created_at DESC);
 CREATE INDEX idx_votes_user_slang ON votes(user_id, slang_id);
 CREATE INDEX idx_votes_slang_id ON votes(slang_id);
 CREATE INDEX idx_slangs_is_nsfw ON slangs(is_nsfw);
+CREATE INDEX idx_slangs_slug ON slangs(slug);
 
 -- ============================================================
 -- 4. TRIGGERS: Auto-admin elevation

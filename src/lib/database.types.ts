@@ -14,6 +14,7 @@ export interface AppUser {
 
 export interface SlangData {
   id: string;
+  slug: string;
   word: string;
   pronunciation: string | null;
   meaning: string;

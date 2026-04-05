@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { Plus, X, Loader2, BookOpen, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-react';
+import { generateSlug } from '../lib/utils';
+import { generateSlangDetails } from '../lib/gemini';
+import { Plus, X, Loader2, BookOpen, CheckCircle, AlertCircle, AlertTriangle, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
@@ -17,7 +19,11 @@ export function AddSlang() {
   const [examples, setExamples] = useState<string[]>(['']);
   const [isNsfw, setIsNsfw] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  const isAdmin = appUser?.role === 'admin';
+  const isAutoApprove = appUser?.role === 'moderator' || appUser?.role === 'admin';
 
   const handleAddExample = () => {
     if (examples.length < 5) setExamples([...examples, '']);
@@ -33,6 +39,30 @@ export function AddSlang() {
     const newExamples = [...examples];
     newExamples[index] = value;
     setExamples(newExamples);
+  };
+
+  const handleGenerate = async () => {
+    if (!word.trim()) {
+      setErrorMsg('Enter a slang word first.');
+      return;
+    }
+    setErrorMsg('');
+    setIsGenerating(true);
+    try {
+      const result = await generateSlangDetails(word.trim());
+      setPronunciation(result.pronunciation || '');
+      setMeaning(result.meaning || '');
+      setMeaningBurmese(result.meaning_burmese || '');
+      setIsNsfw(result.is_nsfw || false);
+      if (result.examples && result.examples.length > 0) {
+        setExamples(result.examples.slice(0, 5));
+      }
+    } catch (error) {
+      console.error('Gemini error:', error);
+      setErrorMsg('AI generation failed. Fill in manually or try again.');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,9 +90,20 @@ export function AddSlang() {
       }
 
       const validExamples = examples.filter(ex => ex.trim() !== '');
+      const slug = generateSlug(word.trim(), pronunciation.trim() || null);
+
+      // Ensure slug uniqueness by appending a short suffix if needed
+      const { data: slugExists } = await supabase
+        .from('slangs')
+        .select('id')
+        .eq('slug', slug)
+        .maybeSingle();
+
+      const finalSlug = slugExists ? `${slug}-${Date.now().toString(36).slice(-4)}` : slug;
 
       const { error } = await supabase.from('slangs').insert({
         word: word.trim(),
+        slug: finalSlug,
         pronunciation: pronunciation.trim() || null,
         meaning: meaning.trim(),
         meaning_burmese: meaningBurmese.trim(),
@@ -70,7 +111,7 @@ export function AddSlang() {
         is_nsfw: isNsfw,
         author_id: user.id,
         author_name: appUser.display_name || 'Anonymous',
-        status: appUser.role === 'moderator' || appUser.role === 'admin' ? 'approved' : 'pending',
+        status: isAutoApprove ? 'approved' : 'pending',
       });
 
       if (error) throw error;
@@ -81,8 +122,6 @@ export function AddSlang() {
       setIsSubmitting(false);
     }
   };
-
-  const isAutoApprove = appUser?.role === 'moderator' || appUser?.role === 'admin';
 
   if (!isAuthReady) {
     return (
@@ -140,19 +179,51 @@ export function AddSlang() {
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="bg-surface-raised/80 p-5 sm:p-7 rounded-2xl border border-white/[0.04] space-y-5">
-        {/* Word */}
+        {/* Word + AI Generate */}
         <div>
           <label htmlFor="word" className="block text-[11px] font-bold text-text-secondary mb-1.5 uppercase tracking-wider">
             Slang Word <span className="text-red-400">*</span>
           </label>
-          <input
-            type="text" id="word" required maxLength={100}
-            className="w-full px-4 py-3 bg-surface/80 border border-white/[0.06] rounded-xl focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500/30 outline-none transition-all text-base font-medium text-white placeholder-white/20"
-            placeholder="e.g., ကြွေ"
-            value={word}
-            onChange={(e) => setWord(e.target.value)}
-          />
+          <div className={cn("flex gap-2", !isAdmin && "flex-col")}>
+            <input
+              type="text" id="word" required maxLength={100}
+              className="flex-1 px-4 py-3 bg-surface/80 border border-white/[0.06] rounded-xl focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500/30 outline-none transition-all text-base font-medium text-white placeholder-white/20"
+              placeholder="e.g., ကြွေ"
+              value={word}
+              onChange={(e) => setWord(e.target.value)}
+            />
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={handleGenerate}
+                disabled={isGenerating || !word.trim()}
+                className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 border border-purple-500/20 text-purple-300 font-semibold rounded-xl transition-all active:scale-95 disabled:opacity-40 disabled:pointer-events-none text-sm whitespace-nowrap shrink-0"
+              >
+                {isGenerating ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Sparkles className="w-4 h-4" />
+                )}
+                {isGenerating ? 'Generating...' : 'AI Fill'}
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* AI generating overlay indicator */}
+        <AnimatePresence>
+          {isGenerating && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="flex items-center gap-3 p-3.5 bg-purple-500/10 border border-purple-500/15 rounded-xl"
+            >
+              <Loader2 className="w-4 h-4 text-purple-400 animate-spin shrink-0" />
+              <span className="text-sm text-purple-300 font-medium">Gemini AI is generating details for "{word}"...</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Pronunciation */}
         <div>

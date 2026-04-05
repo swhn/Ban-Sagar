@@ -323,7 +323,7 @@ export function Dashboard() {
                           <p className="text-white/70 text-sm line-clamp-1">{item.meaning}</p>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <Link to={`/slang/${item.id}`} target="_blank" className="flex items-center gap-1 px-3 py-1.5 bg-white/[0.03] border border-white/[0.06] text-white/50 hover:text-indigo-400 rounded-lg text-xs font-semibold transition-all">
+                          <Link to={`/slang/${item.slug || item.id}`} target="_blank" className="flex items-center gap-1 px-3 py-1.5 bg-white/[0.03] border border-white/[0.06] text-white/50 hover:text-indigo-400 rounded-lg text-xs font-semibold transition-all">
                             <ExternalLink className="w-3.5 h-3.5" /> View
                           </Link>
                           <button onClick={() => handleDelete(item.id)} className="flex items-center gap-1 px-3 py-1.5 bg-red-500/[0.06] text-red-400 hover:bg-red-500/10 rounded-lg text-xs font-semibold transition-all border border-red-500/15">

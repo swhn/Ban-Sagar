@@ -19,7 +19,7 @@ export default function App() {
             <Route path="add" element={<AddSlang />} />
             <Route path="leaderboard" element={<Leaderboard />} />
             <Route path="dashboard" element={<Dashboard />} />
-            <Route path="slang/:id" element={<SlangDetail />} />
+            <Route path="slang/:slug" element={<SlangDetail />} />
             <Route path="edit/:id" element={<EditSlang />} />
           </Route>
         </Routes>

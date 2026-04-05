@@ -191,7 +191,7 @@ export function Home() {
                 {exactMatches.map(match => (
                   <li key={match.id}>
                     <Link
-                      to={`/slang/${match.id}`}
+                      to={`/slang/${match.slug || match.id}`}
                       className="flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
                       onClick={() => setIsFocused(false)}
                     >
@@ -293,7 +293,7 @@ export function Home() {
               className="h-full"
             >
               <Link
-                to={`/slang/${slang.id}`}
+                to={`/slang/${slang.slug || slang.id}`}
                 className={cn(
                   "group block h-full bg-surface-raised/80 p-5 sm:p-6 rounded-2xl border hover:bg-surface-raised transition-all duration-200 relative overflow-hidden active:scale-[0.98]",
                   slang.is_nsfw ? "border-red-500/10 hover:border-red-500/20" : "border-white/[0.04] hover:border-indigo-500/20"
