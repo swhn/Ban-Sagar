@@ -1,0 +1,213 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - uid: string (required)
+    //   - displayName: string (optional)
+    //   - email: string (required)
+    //   - role: string (required, enum: 'user', 'moderator', 'admin')
+    //   - createdAt: timestamp (required)
+    //
+    // Collection: slangs
+    // Document ID: {slangId}
+    // Fields:
+    //   - word: string (required)
+    //   - meaning: string (required)
+    //   - examples: list of strings (optional)
+    //   - authorId: string (required)
+    //   - authorName: string (optional)
+    //   - status: string (required, enum: 'pending', 'approved', 'rejected')
+    //   - upvotes: number (required)
+    //   - downvotes: number (required)
+    //   - createdAt: timestamp (required)
+    //   - updatedAt: timestamp (required)
+    //   - views: number (optional)
+    //   - viewHistory: map (optional)
+    //
+    // Collection: votes
+    // Document ID: {userId}_{slangId}
+    // Fields:
+    //   - userId: string (required)
+    //   - slangId: string (required)
+    //   - voteType: string (required, enum: 'up', 'down')
+    //   - createdAt: timestamp (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function getUserData() {
+      let userDoc = get(/databases/$(database)/documents/users/$(request.auth.uid));
+      return userDoc != null ? userDoc.data : null;
+    }
+    
+    function isModerator() {
+      let data = getUserData();
+      return isAuthenticated() && data != null && (data.role == 'moderator' || data.role == 'admin');
+    }
+    
+    function isAdmin() {
+      let data = getUserData();
+      return isAuthenticated() && (
+        (data != null && data.role == 'admin') || 
+        (request.auth.token.email == "saiwailyanhtun@gmail.com" && request.auth.token.email_verified == true)
+      );
+    }
+
+    function hasOnlyAllowedFields(allowedFields) {
+      return request.resource.data.keys().hasOnly(allowedFields);
+    }
+
+    function hasRequiredFields(requiredFields) {
+      return request.resource.data.keys().hasAll(requiredFields);
+    }
+
+    function isValidString(val, minLen, maxLen) {
+      return val is string && val.size() >= minLen && val.size() <= maxLen;
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return hasOnlyAllowedFields(['uid', 'displayName', 'email', 'role', 'createdAt']) &&
+             hasRequiredFields(['uid', 'email', 'role', 'createdAt']) &&
+             data.uid == request.auth.uid &&
+             data.email is string &&
+             (data.displayName == null || isValidString(data.displayName, 1, 100)) &&
+             data.role in ['user', 'moderator', 'admin'] &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidSlang(data) {
+      return hasOnlyAllowedFields(['word', 'pronunciation', 'meaning', 'meaningBurmese', 'examples', 'authorId', 'authorName', 'status', 'upvotes', 'downvotes', 'createdAt', 'updatedAt', 'views', 'viewHistory']) &&
+             hasRequiredFields(['word', 'meaning', 'authorId', 'status', 'upvotes', 'downvotes', 'createdAt', 'updatedAt']) &&
+             isValidString(data.word, 1, 100) &&
+             (!('pronunciation' in data) || isValidString(data.pronunciation, 1, 100)) &&
+             isValidString(data.meaning, 1, 1000) &&
+             (!('meaningBurmese' in data) || isValidString(data.meaningBurmese, 1, 1000)) &&
+             (!('examples' in data) || (data.examples is list && data.examples.size() <= 10)) &&
+             data.authorId is string &&
+             (!('authorName' in data) || isValidString(data.authorName, 1, 100)) &&
+             data.status in ['pending', 'approved', 'rejected'] &&
+             data.upvotes is number && data.upvotes >= 0 &&
+             data.downvotes is number && data.downvotes >= 0 &&
+             (!('views' in data) || (data.views is number && data.views >= 0)) &&
+             (!('viewHistory' in data) || data.viewHistory is map) &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp;
+    }
+
+    function isValidVote(data) {
+      return hasOnlyAllowedFields(['userId', 'slangId', 'voteType', 'createdAt']) &&
+             hasRequiredFields(['userId', 'slangId', 'voteType', 'createdAt']) &&
+             data.userId == request.auth.uid &&
+             data.slangId is string &&
+             data.voteType in ['up', 'down'] &&
+             data.createdAt is timestamp;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      // Users can read their own profile. Moderators/Admins can read all profiles.
+      allow read: if isOwner(userId) || isModerator();
+      
+      // Users can create their own profile, but cannot assign themselves moderator/admin roles unless they are already admin
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) && 
+                    ((request.resource.data.role == 'user') || isAdmin());
+                    
+      // Users can update their own profile (except role). Admins can update roles.
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && 
+                    (
+                      (request.resource.data.role == resource.data.role && request.resource.data.uid == resource.data.uid && request.resource.data.createdAt == resource.data.createdAt) || 
+                      isAdmin()
+                    );
+    }
+
+    match /slangs/{slangId} {
+      // Anyone can read approved slangs. Moderators can read all slangs. Authors can read their own slangs.
+      allow read: if resource.data.status == 'approved' || isModerator() || (isAuthenticated() && resource.data.authorId == request.auth.uid);
+      
+      // Any authenticated user can create a slang, but it must start as pending (unless moderator/admin)
+      allow create: if isAuthenticated() && isValidSlang(request.resource.data) && 
+                    request.resource.data.authorId == request.auth.uid &&
+                    request.resource.data.upvotes == 0 && request.resource.data.downvotes == 0 &&
+                    ((request.resource.data.status == 'pending') || isModerator());
+                    
+      // Updates
+      allow update: if isValidSlang(request.resource.data) && (
+        // 1. Moderators can update status and content
+        isModerator() ||
+        
+        // 2. Authors can update content if it's pending (cannot change status, authorId, votes, createdAt)
+        (
+          isAuthenticated() &&
+          resource.data.authorId == request.auth.uid &&
+          resource.data.status == 'pending' &&
+          request.resource.data.status == 'pending' &&
+          request.resource.data.authorId == resource.data.authorId &&
+          request.resource.data.upvotes == resource.data.upvotes &&
+          request.resource.data.downvotes == resource.data.downvotes &&
+          request.resource.data.createdAt == resource.data.createdAt
+        ) ||
+        
+        // 3. Any authenticated user can update votes
+        (
+          isAuthenticated() &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['upvotes', 'downvotes', 'updatedAt']) &&
+          (request.resource.data.upvotes - resource.data.upvotes >= -1) &&
+          (request.resource.data.upvotes - resource.data.upvotes <= 1) &&
+          (request.resource.data.downvotes - resource.data.downvotes >= -1) &&
+          (request.resource.data.downvotes - resource.data.downvotes <= 1)
+        ) ||
+        
+        // 4. Anyone can increment views
+        (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'viewHistory']) &&
+          request.resource.data.views == ('views' in resource.data ? resource.data.views : 0) + 1
+        )
+      );
+      
+      // Only moderators can delete
+      allow delete: if isModerator();
+    }
+
+    match /votes/{voteId} {
+      // Users can read their own votes
+      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid);
+      
+      // Users can create/update their own votes
+      allow create: if isAuthenticated() && isValidVote(request.resource.data) && 
+                    voteId == request.auth.uid + '_' + request.resource.data.slangId;
+                    
+      allow update: if isAuthenticated() && isValidVote(request.resource.data) && 
+                    resource.data.userId == request.auth.uid &&
+                    request.resource.data.userId == resource.data.userId &&
+                    request.resource.data.slangId == resource.data.slangId &&
+                    request.resource.data.createdAt == resource.data.createdAt;
+                    
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+  }
+}
