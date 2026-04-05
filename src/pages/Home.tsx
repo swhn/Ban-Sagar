@@ -2,10 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { Link } from 'react-router-dom';
 import { SlangData } from '../lib/database.types';
-import { Search, TrendingUp, Clock, ThumbsUp, Shuffle, Sparkles, BookOpen } from 'lucide-react';
-import { motion } from 'motion/react';
+import { Search, TrendingUp, Clock, ThumbsUp, Shuffle, Sparkles, BookOpen, ArrowRight, Eye } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { GradientBackground } from '../components/GradientBackground';
 import { LoadingGrid } from '../components/LoadingSkeleton';
+import { cn } from '../lib/utils';
 
 type SortTab = 'trending' | 'latest' | 'most_upvote' | 'random';
 type TrendingPeriod = 'day' | 'week' | 'month' | 'year';
@@ -49,7 +50,6 @@ export function Home() {
   }, []);
 
   useEffect(() => {
-    // Initial fetch
     const fetchSlangs = async () => {
       const { data, error } = await supabase
         .from('slangs')
@@ -66,7 +66,6 @@ export function Home() {
 
     fetchSlangs();
 
-    // Realtime subscription
     const channel = supabase
       .channel('slangs-home')
       .on('postgres_changes', {
@@ -81,9 +80,7 @@ export function Home() {
           setSlangs(prev => {
             if (updated.status === 'approved') {
               const exists = prev.find(s => s.id === updated.id);
-              if (exists) {
-                return prev.map(s => s.id === updated.id ? updated : s);
-              }
+              if (exists) return prev.map(s => s.id === updated.id ? updated : s);
               return [...prev, updated];
             }
             return prev.filter(s => s.id !== updated.id);
@@ -94,9 +91,7 @@ export function Home() {
       })
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   let sortedSlangs = [...slangs];
@@ -130,77 +125,94 @@ export function Home() {
     .slice(0, 5);
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-8 sm:space-y-10">
+      {/* Hero */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="text-center space-y-6 py-12 sm:py-20 relative"
+        className="text-center space-y-5 py-8 sm:py-16 relative"
       >
         <GradientBackground />
         <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-indigo-300 text-sm font-medium mb-6">
-            <Sparkles className="w-4 h-4" />
-            <span>The largest collection of Myanmar street slang</span>
-          </div>
-          <h1 className="text-5xl sm:text-7xl font-display font-extrabold text-white tracking-tight">
-            Myanmar <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">Slang</span> Dictionary
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-indigo-300/80 text-xs sm:text-sm font-medium mb-5"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>{slangs.length} Myanmar street slangs and counting</span>
+          </motion.div>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold text-white tracking-tight leading-[1.1]">
+            Myanmar{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
+              Slang
+            </span>
+            {' '}Dictionary
           </h1>
-          <p className="text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto leading-relaxed mt-6">
-            Discover, learn, and contribute to the living language of Myanmar. From street talk to internet culture.
+          <p className="text-base sm:text-lg text-text-secondary max-w-xl mx-auto leading-relaxed mt-4 px-4">
+            Discover, learn, and contribute to the living language of Myanmar.
           </p>
         </div>
       </motion.div>
 
+      {/* Search */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-        className="relative max-w-2xl mx-auto z-20" ref={searchRef}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className="relative max-w-xl mx-auto z-20 px-2"
+        ref={searchRef}
       >
-        <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-          <Search className="h-6 w-6 text-white/30" />
+        <div className="absolute inset-y-0 left-2 pl-4 flex items-center pointer-events-none">
+          <Search className="h-5 w-5 text-white/25" />
         </div>
         <input
           type="text"
-          className="block w-full pl-14 pr-4 py-5 bg-surface-raised border border-white/5 rounded-2xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/50 shadow-2xl shadow-black/20 text-lg transition-all"
-          placeholder="Search for a word or meaning (e.g., ဂေါ်, လန်း)..."
+          className="block w-full pl-12 pr-4 py-4 bg-surface-raised/80 backdrop-blur-sm border border-white/[0.06] rounded-2xl text-white placeholder-white/25 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/20 text-base transition-all"
+          placeholder="Search word or meaning..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onFocus={() => setIsFocused(true)}
         />
 
-        {isFocused && searchTerm && exactMatches.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="absolute top-full left-0 right-0 mt-3 bg-surface-overlay border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
-          >
-            <ul className="py-2">
-              {exactMatches.map(match => (
-                <li
-                  key={match.id}
-                  className="px-5 py-4 hover:bg-white/5 cursor-pointer text-white flex items-center justify-between border-b border-white/5 last:border-0 transition-colors"
-                  onClick={() => {
-                    setSearchTerm(match.word);
-                    setIsFocused(false);
-                  }}
-                >
-                  <span className="font-bold text-lg">{match.word}</span>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
-        )}
+        <AnimatePresence>
+          {isFocused && searchTerm && exactMatches.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 4 }}
+              className="absolute top-full left-2 right-2 mt-2 bg-surface-overlay/95 backdrop-blur-xl border border-white/[0.08] rounded-xl shadow-2xl shadow-black/40 overflow-hidden"
+            >
+              <ul className="py-1">
+                {exactMatches.map(match => (
+                  <li key={match.id}>
+                    <Link
+                      to={`/slang/${match.id}`}
+                      className="flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
+                      onClick={() => setIsFocused(false)}
+                    >
+                      <span className="font-bold text-white">{match.word}</span>
+                      <ArrowRight className="w-4 h-4 text-white/20" />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
+      {/* Sort Tabs */}
       <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-          <div className="flex flex-wrap gap-1.5 p-1 bg-white/5 rounded-xl border border-white/5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          {/* Main tabs - scrollable on mobile */}
+          <div className="flex gap-1 overflow-x-auto no-scrollbar pb-1 -mx-1 px-1">
             {([
               { key: 'trending', label: 'Trending', icon: TrendingUp },
               { key: 'latest', label: 'Latest', icon: Clock },
-              { key: 'most_upvote', label: 'Most Upvoted', icon: ThumbsUp },
+              { key: 'most_upvote', label: 'Top', icon: ThumbsUp },
               { key: 'random', label: 'Random', icon: Shuffle },
             ] as const).map(({ key, label, icon: Icon }) => (
               <button
@@ -209,37 +221,48 @@ export function Home() {
                   setActiveTab(key);
                   if (key === 'random') setRandomSeed(Math.random());
                 }}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                className={cn(
+                  "flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap shrink-0",
                   activeTab === key
-                    ? 'bg-indigo-500/20 text-indigo-300 ring-1 ring-indigo-500/30'
-                    : 'text-white/50 hover:text-white/80 hover:bg-white/5'
-                }`}
+                    ? 'bg-white/[0.07] text-white'
+                    : 'text-white/40 hover:text-white/70 hover:bg-white/[0.03]'
+                )}
               >
-                <Icon className="w-4 h-4" /> {label}
+                <Icon className="w-3.5 h-3.5" /> {label}
               </button>
             ))}
           </div>
 
-          {activeTab === 'trending' && (
-            <div className="flex bg-white/5 p-1 rounded-xl border border-white/5 self-start sm:self-auto">
-              {(['day', 'week', 'month', 'year'] as TrendingPeriod[]).map((period) => (
-                <button
-                  key={period}
-                  onClick={() => setTrendingPeriod(period)}
-                  className={`px-4 py-2 text-xs font-semibold rounded-lg capitalize transition-all ${
-                    trendingPeriod === period
-                      ? 'bg-indigo-500/20 text-indigo-300 ring-1 ring-indigo-500/30'
-                      : 'text-white/40 hover:text-white/70'
-                  }`}
-                >
-                  1 {period}
-                </button>
-              ))}
-            </div>
-          )}
+          {/* Trending period */}
+          <AnimatePresence>
+            {activeTab === 'trending' && (
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                className="flex gap-0.5 bg-white/[0.03] p-1 rounded-lg border border-white/[0.04] shrink-0 self-start"
+              >
+                {(['day', 'week', 'month', 'year'] as TrendingPeriod[]).map((period) => (
+                  <button
+                    key={period}
+                    onClick={() => setTrendingPeriod(period)}
+                    className={cn(
+                      "px-3 py-1.5 text-xs font-semibold rounded-md capitalize transition-all",
+                      trendingPeriod === period
+                        ? 'bg-white/[0.08] text-white'
+                        : 'text-white/30 hover:text-white/60'
+                    )}
+                  >
+                    {period === 'day' ? '24h' : `1${period[0]}`}
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
+      {/* Content */}
       {loading ? (
         <div className="max-w-6xl mx-auto">
           <LoadingGrid />
@@ -253,30 +276,44 @@ export function Home() {
             hidden: { opacity: 0 },
             visible: {
               opacity: 1,
-              transition: { staggerChildren: 0.04 }
+              transition: { staggerChildren: 0.03 }
             }
           }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto"
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 max-w-6xl mx-auto"
         >
           {filteredSlangs.map(slang => (
             <motion.div
               key={slang.id}
               variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0 }
+                hidden: { opacity: 0, scale: 0.95 },
+                visible: { opacity: 1, scale: 1 }
               }}
               className="h-full"
             >
               <Link
                 to={`/slang/${slang.id}`}
-                className="block h-full bg-surface-raised p-8 rounded-2xl border border-white/5 hover:border-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/5 hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden"
+                className="group block h-full bg-surface-raised/80 p-5 sm:p-6 rounded-2xl border border-white/[0.04] hover:border-indigo-500/20 hover:bg-surface-raised transition-all duration-200 relative overflow-hidden active:scale-[0.98]"
               >
-                <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div className="flex flex-col items-center justify-center text-center h-full min-h-[100px]">
-                  <h2 className="text-3xl font-display font-bold text-white group-hover:text-indigo-300 transition-colors">{slang.word}</h2>
+                {/* Top gradient line */}
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                <div className="flex flex-col items-center justify-center text-center min-h-[80px] sm:min-h-[100px]">
+                  <h2 className="text-xl sm:text-2xl lg:text-3xl font-display font-bold text-white group-hover:text-indigo-300 transition-colors leading-tight">
+                    {slang.word}
+                  </h2>
                   {slang.pronunciation && (
-                    <p className="text-sm text-text-secondary mt-2">/{slang.pronunciation}/</p>
+                    <p className="text-xs sm:text-sm text-text-secondary mt-1.5 font-medium">/{slang.pronunciation}/</p>
                   )}
+                </div>
+
+                {/* Footer stats */}
+                <div className="flex items-center justify-center gap-3 mt-3 pt-3 border-t border-white/[0.04]">
+                  <span className="flex items-center gap-1 text-[11px] text-white/25 font-medium">
+                    <ThumbsUp className="w-3 h-3" /> {slang.upvotes || 0}
+                  </span>
+                  <span className="flex items-center gap-1 text-[11px] text-white/25 font-medium">
+                    <Eye className="w-3 h-3" /> {slang.views || 0}
+                  </span>
                 </div>
               </Link>
             </motion.div>
@@ -286,13 +323,13 @@ export function Home() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center py-20 bg-surface-raised rounded-2xl border border-white/5 max-w-3xl mx-auto"
+          className="text-center py-16 sm:py-20 bg-surface-raised/50 rounded-2xl border border-white/[0.04] max-w-2xl mx-auto"
         >
-          <div className="bg-white/5 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <BookOpen className="w-10 h-10 text-white/20" />
+          <div className="bg-white/[0.03] w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <BookOpen className="w-8 h-8 text-white/15" />
           </div>
-          <p className="text-white/70 text-xl font-medium">No slangs found matching "{searchTerm}"</p>
-          <p className="text-text-secondary mt-2">Try a different search term or add a new slang!</p>
+          <p className="text-white/60 text-lg font-medium">No results for "{searchTerm}"</p>
+          <p className="text-text-secondary mt-1.5 text-sm">Try a different search or contribute a new word!</p>
         </motion.div>
       )}
     </div>
