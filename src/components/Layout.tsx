@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { BookOpen, LogIn, LogOut, Shield, PlusCircle, Sparkles } from 'lucide-react';
+import { BookOpen, LogIn, LogOut, Shield, PlusCircle, Sparkles, Trophy } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export function Layout() {
@@ -22,6 +22,14 @@ export function Layout() {
           </Link>
 
           <nav className="flex items-center gap-2 sm:gap-3">
+            <Link
+              to="/leaderboard"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-sm font-medium text-amber-400/70 hover:text-amber-300 hover:bg-white/5 rounded-lg transition-all"
+            >
+              <Trophy className="w-5 h-5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Leaderboard</span>
+            </Link>
+
             {user ? (
               <>
                 <Link
