@@ -3,9 +3,9 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { SlangCard } from '../components/SlangCard';
 import { SlangData } from '../lib/database.types';
-import { Loader2, ArrowLeft, Sparkles, Share2, Home } from 'lucide-react';
+import { Loader2, ArrowLeft, Sparkles, Share2, Home, Copy, Check } from 'lucide-react';
 import { motion } from 'motion/react';
-import { cn } from '../lib/utils';
+import { cn, generateSlug } from '../lib/utils';
 
 export function SlangDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -37,11 +37,30 @@ export function SlangDetail() {
         if (error) throw error;
 
         if (data) {
-          setSlang(data as SlangData);
+          const slangData = data as SlangData;
+
+          // Auto-generate and save slug for old entries missing one
+          if (!slangData.slug) {
+            const newSlug = generateSlug(slangData.word, slangData.pronunciation);
+            slangData.slug = newSlug;
+            supabase
+              .from('slangs')
+              .update({ slug: newSlug })
+              .eq('id', slangData.id)
+              .then(({ error }) => {
+                if (error) console.error('Slug update error:', error);
+                else {
+                  // Replace URL with the new slug without reloading
+                  window.history.replaceState(null, '', `/slang/${newSlug}`);
+                }
+              });
+          }
+
+          setSlang(slangData);
 
           if (!viewedRef.current) {
             viewedRef.current = true;
-            supabase.rpc('increment_view', { p_slang_id: data.id }).then(({ error }) => {
+            supabase.rpc('increment_view', { p_slang_id: slangData.id }).then(({ error }) => {
               if (error) console.error('View increment error:', error);
             });
           }
@@ -58,16 +77,31 @@ export function SlangDetail() {
   }, [slug]);
 
   const handleShare = async () => {
-    const url = window.location.href;
+    const shareSlug = slang?.slug || slang?.id;
+    const url = `${window.location.origin}/slang/${shareSlug}`;
     try {
       if (navigator.share) {
         await navigator.share({ title: `${slang?.word} - Ban Sagar`, url });
-      } else {
-        await navigator.clipboard.writeText(url);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        return;
       }
-    } catch { /* user cancelled */ }
+    } catch { /* user cancelled or not supported */ }
+
+    // Clipboard fallback for desktop
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      // Final fallback: textarea copy for older browsers / non-https
+      const textarea = document.createElement('textarea');
+      textarea.value = url;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   if (loading) {

@@ -22,7 +22,7 @@ Generate the following in valid JSON format (no markdown, no code fences, just r
   "pronunciation": "romanized pronunciation (e.g., Kyway)",
   "meaning": "English meaning/definition in 1-3 sentences",
   "meaning_burmese": "Burmese meaning/definition using Myanmar script",
-  "examples": ["example sentence 1 using the word", "example sentence 2 using the word", "example sentence 3 using the word"],
+  "examples": ["Myanmar example sentence using the word (English translation)", "Another example (English translation)", "Third example (English translation)"],
   "is_nsfw": false
 }
 
@@ -30,7 +30,7 @@ Rules:
 - pronunciation should be a simple romanized/phonetic spelling
 - meaning should be clear and concise in English
 - meaning_burmese should be in Myanmar script (Unicode)
-- examples should show natural usage of the word in sentences (can mix Myanmar and English as locals do)
+- Each example MUST be a Myanmar sentence followed by its English translation in parentheses, like: "ဒီကောင် ကြွေတယ် (This guy is showing off)"
 - is_nsfw should be true if the word is vulgar, sexual, or offensive
 - Return ONLY the JSON object, nothing else`;
 
