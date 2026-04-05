@@ -1,15 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
-import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db, handleFirestoreError, OperationType } from '../lib/firebase';
-
-interface AppUser {
-  uid: string;
-  email: string;
-  displayName: string | null;
-  role: 'user' | 'moderator' | 'admin';
-  createdAt: any;
-}
+import { Session, User } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
+import { AppUser } from '../lib/database.types';
 
 interface AuthContextType {
   user: User | null;
@@ -27,62 +19,79 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthReady, setIsAuthReady] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser);
-      if (firebaseUser) {
-        try {
-          const userDocRef = doc(db, 'users', firebaseUser.uid);
-          const userDoc = await getDoc(userDocRef);
-          
-          if (userDoc.exists()) {
-            const data = userDoc.data() as AppUser;
-            // Automatically upgrade the default admin email to admin role if they aren't already
-            if (firebaseUser.email === 'saiwailyanhtun@gmail.com' && data.role !== 'admin') {
-              await updateDoc(userDocRef, { role: 'admin' });
-              setAppUser({ ...data, role: 'admin' });
-            } else {
-              setAppUser(data);
-            }
-          } else {
-            // Create new user profile
-            const newUser: AppUser = {
-              uid: firebaseUser.uid,
-              email: firebaseUser.email || '',
-              displayName: firebaseUser.displayName,
-              role: firebaseUser.email === 'saiwailyanhtun@gmail.com' ? 'admin' : 'user',
-              createdAt: serverTimestamp(),
-            };
-            await setDoc(userDocRef, newUser);
-            setAppUser(newUser);
-          }
-        } catch (error) {
-          handleFirestoreError(error, OperationType.GET, `users/${firebaseUser.uid}`);
-        }
-      } else {
-        setAppUser(null);
-      }
-      setIsAuthReady(true);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      handleSession(session);
     });
 
-    return () => unsubscribe();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      handleSession(session);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error('Login failed', error);
+  async function handleSession(session: Session | null) {
+    if (session?.user) {
+      setUser(session.user);
+      await loadOrCreateProfile(session.user);
+    } else {
+      setUser(null);
+      setAppUser(null);
     }
-  };
+    setIsAuthReady(true);
+  }
 
-  const logout = async () => {
+  async function loadOrCreateProfile(authUser: User) {
     try {
-      await signOut(auth);
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', authUser.id)
+        .single();
+
+      if (existingUser) {
+        setAppUser(existingUser as AppUser);
+      } else {
+        const newUser = {
+          id: authUser.id,
+          email: authUser.email || '',
+          display_name: authUser.user_metadata.full_name || authUser.user_metadata.name || null,
+          avatar_url: authUser.user_metadata.avatar_url || null,
+        };
+
+        const { data, error } = await supabase
+          .from('users')
+          .insert(newUser)
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error creating user profile:', error);
+          return;
+        }
+        setAppUser(data as AppUser);
+      }
     } catch (error) {
-      console.error('Logout failed', error);
+      console.error('Error loading user profile:', error);
     }
-  };
+  }
+
+  async function login() {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
+    if (error) console.error('Login error:', error);
+  }
+
+  async function logout() {
+    const { error } = await supabase.auth.signOut();
+    if (error) console.error('Logout error:', error);
+    setUser(null);
+    setAppUser(null);
+  }
 
   return (
     <AuthContext.Provider value={{ user, appUser, isAuthReady, login, logout }}>
