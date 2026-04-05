@@ -28,10 +28,7 @@ export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, on
   }, [slang.upvotes, slang.downvotes]);
 
   useEffect(() => {
-    if (!user) {
-      setUserVote(null);
-      return;
-    }
+    if (!user) { setUserVote(null); return; }
     const fetchVote = async () => {
       try {
         const { data } = await supabase
@@ -40,7 +37,6 @@ export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, on
           .eq('user_id', user.id)
           .eq('slang_id', slang.id)
           .maybeSingle();
-
         setUserVote(data?.vote_type as VoteType | null);
       } catch (error) {
         console.error('Error fetching vote:', error);
@@ -56,10 +52,8 @@ export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, on
 
   const handleVote = async (type: VoteType) => {
     if (!user) return;
-
     const previousVote = userVote;
 
-    // Optimistic update
     if (previousVote === type) {
       setUserVote(null);
       if (type === 'up') setOptimisticUpvotes(prev => Math.max(0, prev - 1));
@@ -85,7 +79,6 @@ export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, on
         p_vote_type: type,
       });
     } catch (error) {
-      // Revert on error
       setUserVote(previousVote);
       setOptimisticUpvotes(slang.upvotes);
       setOptimisticDownvotes(slang.downvotes);
@@ -95,139 +88,140 @@ export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, on
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
+      layout
       className={cn(
-        "bg-surface-raised rounded-2xl border border-white/5 overflow-hidden transition-all duration-300 hover:border-white/10",
-        slang.status === 'pending' && "border-amber-500/20 bg-amber-500/5",
-        slang.status === 'rejected' && "border-red-500/20 bg-red-500/5"
+        "bg-surface-raised rounded-2xl border overflow-hidden transition-all",
+        slang.status === 'pending' ? "border-amber-500/15" :
+        slang.status === 'rejected' ? "border-red-500/15" :
+        "border-white/[0.04] hover:border-white/[0.08]"
       )}
     >
-      <div className="p-6 sm:p-8">
-        <div className="flex justify-between items-start gap-4 mb-6">
-          <div>
-            <h3 className="text-3xl sm:text-4xl font-display font-bold text-white tracking-tight mb-1">
+      <div className="p-5 sm:p-7">
+        {/* Header */}
+        <div className="flex justify-between items-start gap-3 mb-5">
+          <div className="min-w-0">
+            <h3 className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight">
               {slang.word}
             </h3>
             {slang.pronunciation && (
-              <p className="text-lg text-text-secondary font-medium mb-3">/{slang.pronunciation}/</p>
+              <p className="text-base text-text-secondary font-medium mt-0.5">/{slang.pronunciation}/</p>
             )}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 mt-2.5">
               {isModeratorView && (
                 <span className={cn(
-                  "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider",
-                  slang.status === 'approved' ? "bg-emerald-500/15 text-emerald-400" :
-                  slang.status === 'pending' ? "bg-amber-500/15 text-amber-400" :
-                  "bg-red-500/15 text-red-400"
+                  "inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider",
+                  slang.status === 'approved' ? "bg-emerald-500/10 text-emerald-400" :
+                  slang.status === 'pending' ? "bg-amber-500/10 text-amber-400" :
+                  "bg-red-500/10 text-red-400"
                 )}>
                   {slang.status}
                 </span>
               )}
-              <div className="flex items-center gap-1.5 text-text-secondary text-sm font-medium">
-                <Eye className="w-4 h-4" />
-                <span>{slang.views || 0} views</span>
-              </div>
+              <span className="flex items-center gap-1 text-text-secondary text-xs font-medium">
+                <Eye className="w-3.5 h-3.5" /> {slang.views || 0}
+              </span>
             </div>
           </div>
 
           {isModeratorView && (
-            <div className="flex flex-col gap-2 shrink-0">
+            <div className="flex flex-wrap gap-1.5 shrink-0">
               {slang.status !== 'approved' && (
                 <button
                   onClick={() => onApprove?.(slang.id)}
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-400 rounded-xl hover:bg-emerald-500/20 text-sm font-semibold transition-all hover:scale-105 active:scale-95 border border-emerald-500/20"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/15 text-xs font-semibold transition-all active:scale-95 border border-emerald-500/15"
                 >
-                  <CheckCircle className="w-4 h-4" /> Approve
+                  <CheckCircle className="w-3.5 h-3.5" /> Approve
                 </button>
               )}
               {slang.status !== 'rejected' && (
                 <button
                   onClick={() => onReject?.(slang.id)}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 text-sm font-semibold transition-all hover:scale-105 active:scale-95 border border-red-500/20"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/15 text-xs font-semibold transition-all active:scale-95 border border-red-500/15"
                 >
-                  <XCircle className="w-4 h-4" /> Reject
+                  <XCircle className="w-3.5 h-3.5" /> Reject
                 </button>
               )}
               <button
                 onClick={() => onEdit?.(slang.id)}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 text-indigo-400 rounded-xl hover:bg-indigo-500/20 text-sm font-semibold transition-all hover:scale-105 active:scale-95 border border-indigo-500/20"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/10 text-indigo-400 rounded-lg hover:bg-indigo-500/15 text-xs font-semibold transition-all active:scale-95 border border-indigo-500/15"
               >
-                <Edit className="w-4 h-4" /> Edit
+                <Edit className="w-3.5 h-3.5" /> Edit
               </button>
             </div>
           )}
         </div>
 
-        <div className="space-y-4">
-          <div className="bg-white/[0.03] rounded-2xl p-5 border border-white/5">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-text-secondary mb-2">Meaning (English)</h4>
-            <p className="text-white/90 text-lg leading-relaxed">{slang.meaning}</p>
+        {/* Content */}
+        <div className="space-y-3">
+          <div className="bg-white/[0.02] rounded-xl p-4 border border-white/[0.03]">
+            <h4 className="text-[10px] font-bold uppercase tracking-wider text-text-secondary mb-1.5">English</h4>
+            <p className="text-white/85 text-[15px] leading-relaxed">{slang.meaning}</p>
           </div>
 
           {slang.meaning_burmese && (
-            <div className="bg-indigo-500/5 rounded-2xl p-5 border border-indigo-500/10">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-400/70 mb-2">Meaning (Burmese)</h4>
-              <p className="text-white/90 text-lg leading-relaxed font-medium">{slang.meaning_burmese}</p>
+            <div className="bg-indigo-500/[0.03] rounded-xl p-4 border border-indigo-500/[0.06]">
+              <h4 className="text-[10px] font-bold uppercase tracking-wider text-indigo-400/60 mb-1.5">Burmese</h4>
+              <p className="text-white/85 text-[15px] leading-relaxed">{slang.meaning_burmese}</p>
             </div>
           )}
 
           {slang.examples && slang.examples.length > 0 && (
-            <div className="space-y-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-text-secondary mb-3">Examples</h4>
-              <ul className="space-y-2">
-                {slang.examples.map((example, index) => (
-                  <li key={index} className="flex items-start gap-3 text-white/70 bg-white/[0.02] border border-white/5 p-4 rounded-xl">
-                    <Quote className="w-5 h-5 text-indigo-500/50 shrink-0 mt-0.5" />
-                    <span className="italic leading-relaxed">{example}</span>
-                  </li>
-                ))}
-              </ul>
+            <div className="space-y-2">
+              <h4 className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">Examples</h4>
+              {slang.examples.map((example, index) => (
+                <div key={index} className="flex items-start gap-2.5 text-white/60 bg-white/[0.015] border border-white/[0.03] p-3.5 rounded-xl">
+                  <Quote className="w-4 h-4 text-indigo-500/30 shrink-0 mt-0.5" />
+                  <span className="italic text-sm leading-relaxed">{example}</span>
+                </div>
+              ))}
             </div>
           )}
         </div>
 
-        <div className="mt-8 pt-6 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-2 bg-white/[0.03] p-1.5 rounded-2xl border border-white/5 w-fit">
+        {/* Footer */}
+        <div className="mt-6 pt-4 border-t border-white/[0.04] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          {/* Vote buttons */}
+          <div className="flex items-center gap-1 bg-white/[0.02] p-1 rounded-xl border border-white/[0.04] w-fit">
             <motion.button
               onClick={() => handleVote('up')}
               animate={voteAnimating === 'up' ? { scale: [1, 1.15, 1] } : {}}
               transition={{ duration: 0.3 }}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-semibold",
-                userVote === 'up' ? "text-indigo-400 bg-indigo-500/15" : "text-white/50 hover:bg-white/5 hover:text-white/80"
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-sm font-semibold",
+                userVote === 'up' ? "text-indigo-400 bg-indigo-500/10" : "text-white/40 hover:bg-white/[0.04] hover:text-white/70"
               )}
             >
-              <ThumbsUp className={cn("w-5 h-5", userVote === 'up' && "fill-indigo-400")} />
+              <ThumbsUp className={cn("w-4 h-4", userVote === 'up' && "fill-indigo-400")} />
               <AnimatePresence mode="wait">
                 <motion.span
                   key={optimisticUpvotes}
-                  initial={{ y: -10, opacity: 0 }}
+                  initial={{ y: -8, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: 10, opacity: 0 }}
-                  transition={{ duration: 0.15 }}
+                  exit={{ y: 8, opacity: 0 }}
+                  transition={{ duration: 0.12 }}
                 >
                   {optimisticUpvotes}
                 </motion.span>
               </AnimatePresence>
             </motion.button>
-            <div className="w-px h-6 bg-white/10 mx-1"></div>
+            <div className="w-px h-5 bg-white/[0.06]" />
             <motion.button
               onClick={() => handleVote('down')}
               animate={voteAnimating === 'down' ? { scale: [1, 1.15, 1] } : {}}
               transition={{ duration: 0.3 }}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-semibold",
-                userVote === 'down' ? "text-red-400 bg-red-500/15" : "text-white/50 hover:bg-white/5 hover:text-white/80"
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-sm font-semibold",
+                userVote === 'down' ? "text-red-400 bg-red-500/10" : "text-white/40 hover:bg-white/[0.04] hover:text-white/70"
               )}
             >
-              <ThumbsDown className={cn("w-5 h-5", userVote === 'down' && "fill-red-400")} />
+              <ThumbsDown className={cn("w-4 h-4", userVote === 'down' && "fill-red-400")} />
               <AnimatePresence mode="wait">
                 <motion.span
                   key={optimisticDownvotes}
-                  initial={{ y: -10, opacity: 0 }}
+                  initial={{ y: -8, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: 10, opacity: 0 }}
-                  transition={{ duration: 0.15 }}
+                  exit={{ y: 8, opacity: 0 }}
+                  transition={{ duration: 0.12 }}
                 >
                   {optimisticDownvotes}
                 </motion.span>
@@ -235,15 +229,16 @@ export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, on
             </motion.button>
           </div>
 
-          <div className="flex items-center gap-4 text-sm text-text-secondary font-medium">
-            <div className="flex items-center gap-2 bg-white/[0.03] px-3 py-1.5 rounded-lg border border-white/5">
-              <User className="w-4 h-4 text-white/30" />
-              <span>{slang.author_name || 'Anonymous'}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-white/30" />
-              <span>{formatDate(slang.created_at)}</span>
-            </div>
+          {/* Author + date */}
+          <div className="flex items-center gap-3 text-xs text-text-secondary font-medium">
+            <span className="flex items-center gap-1.5">
+              <User className="w-3.5 h-3.5 text-white/20" />
+              {slang.author_name || 'Anonymous'}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-white/20" />
+              {formatDate(slang.created_at)}
+            </span>
           </div>
         </div>
       </div>

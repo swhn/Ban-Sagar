@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { SlangCard } from '../components/SlangCard';
 import { SlangData } from '../lib/database.types';
-import { Loader2, ArrowLeft, Sparkles } from 'lucide-react';
+import { Loader2, ArrowLeft, Sparkles, Share2, Home } from 'lucide-react';
 import { motion } from 'motion/react';
+import { cn } from '../lib/utils';
 
 export function SlangDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [slang, setSlang] = useState<SlangData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
   const viewedRef = React.useRef(false);
 
   useEffect(() => {
@@ -46,10 +48,23 @@ export function SlangDetail() {
     fetchSlang();
   }, [id]);
 
+  const handleShare = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: `${slang?.word} - Ban Sagar`, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    } catch { /* user cancelled */ }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
+        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
       </div>
     );
   }
@@ -59,35 +74,49 @@ export function SlangDetail() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center py-20 bg-surface-raised rounded-2xl border border-white/5 max-w-3xl mx-auto"
+        className="text-center py-16 sm:py-20 bg-surface-raised/50 rounded-2xl border border-white/[0.04] max-w-lg mx-auto"
       >
-        <div className="bg-white/5 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-          <Sparkles className="w-10 h-10 text-white/20" />
+        <div className="bg-white/[0.03] w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5">
+          <Sparkles className="w-8 h-8 text-white/15" />
         </div>
-        <h2 className="text-3xl font-display font-bold text-white mb-3">Slang not found</h2>
-        <p className="text-text-secondary mb-8 max-w-md mx-auto">The slang you are looking for does not exist or has been removed by moderators.</p>
-        <button
-          onClick={() => navigate('/')}
-          className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white font-semibold rounded-xl transition-all shadow-lg shadow-indigo-500/25 active:scale-95 flex items-center gap-2 mx-auto"
+        <h2 className="text-2xl font-display font-bold text-white mb-2">Slang not found</h2>
+        <p className="text-text-secondary mb-6 text-sm px-6">This slang doesn't exist or has been removed.</p>
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl text-sm shadow-lg shadow-indigo-500/20 active:scale-95 transition-all"
         >
-          <ArrowLeft className="w-4 h-4" /> Back to Home
-        </button>
+          <Home className="w-4 h-4" /> Back to Home
+        </Link>
       </motion.div>
     );
   }
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-3xl mx-auto space-y-6"
+      className="max-w-2xl mx-auto space-y-4"
     >
-      <button
-        onClick={() => navigate(-1)}
-        className="flex items-center gap-2 px-4 py-2 bg-surface-raised border border-white/5 text-white/60 hover:text-indigo-400 hover:border-indigo-500/30 font-medium rounded-xl transition-all w-fit"
-      >
-        <ArrowLeft className="w-4 h-4" /> Back
-      </button>
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-1.5 px-3 py-2 bg-white/[0.03] border border-white/[0.06] text-white/50 hover:text-white hover:border-white/10 text-sm font-medium rounded-xl transition-all active:scale-95"
+        >
+          <ArrowLeft className="w-4 h-4" /> Back
+        </button>
+
+        <button
+          onClick={handleShare}
+          className={cn(
+            "flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-xl transition-all active:scale-95 border",
+            copied
+              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/15"
+              : "bg-white/[0.03] border-white/[0.06] text-white/50 hover:text-white hover:border-white/10"
+          )}
+        >
+          <Share2 className="w-4 h-4" /> {copied ? 'Copied!' : 'Share'}
+        </button>
+      </div>
 
       <SlangCard slang={slang} />
     </motion.div>
