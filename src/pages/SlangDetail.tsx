@@ -76,30 +76,42 @@ export function SlangDetail() {
     fetchSlang();
   }, [slug]);
 
+  const copyToClipboard = async (text: string) => {
+    // Try modern clipboard API first
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch { /* fall through */ }
+    }
+    // Fallback: hidden textarea
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch { /* ignore */ }
+    document.body.removeChild(textarea);
+    return ok;
+  };
+
   const handleShare = async () => {
     const shareSlug = slang?.slug || slang?.id;
     const url = `${window.location.origin}/slang/${shareSlug}`;
-    try {
-      if (navigator.share) {
+
+    // Only use native share on mobile (touch devices)
+    const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (isMobile && navigator.share) {
+      try {
         await navigator.share({ title: `${slang?.word} - Ban Sagar`, url });
         return;
-      }
-    } catch { /* user cancelled or not supported */ }
-
-    // Clipboard fallback for desktop
-    try {
-      await navigator.clipboard.writeText(url);
-    } catch {
-      // Final fallback: textarea copy for older browsers / non-https
-      const textarea = document.createElement('textarea');
-      textarea.value = url;
-      textarea.style.position = 'fixed';
-      textarea.style.opacity = '0';
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
+      } catch { /* user cancelled */ }
     }
+
+    // Desktop: always copy to clipboard
+    await copyToClipboard(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

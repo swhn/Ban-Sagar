@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { SlangCard } from '../components/SlangCard';
 import { SlangData, SlangStatus, AppUser, UserRole } from '../lib/database.types';
 import { useAuth } from '../contexts/AuthContext';
-import { Loader2, ShieldAlert, CheckCircle, Clock, XCircle, ClipboardList, Copy, Trash2, ExternalLink, Users, Shield, ShieldCheck, User, ChevronDown } from 'lucide-react';
+import { Loader2, ShieldAlert, CheckCircle, Clock, XCircle, ClipboardList, Copy, Trash2, ExternalLink, Users, Shield, ShieldCheck, User, ChevronDown, Search, Edit, ThumbsUp, Eye, AlertTriangle } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -17,6 +16,8 @@ export function Dashboard() {
   const [activeTab, setActiveTab] = useState<SlangStatus>('pending');
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<{text: string, type: 'success' | 'error'} | null>(null);
+
+  const [reviewSearch, setReviewSearch] = useState('');
 
   const [duplicates, setDuplicates] = useState<{word: string, items: SlangData[]}[]>([]);
   const [isScanning, setIsScanning] = useState(false);
@@ -241,46 +242,132 @@ export function Dashboard() {
         </AnimatePresence>
 
         {/* Review */}
-        {activeMenu === 'review' && (
-          <div className="space-y-5">
-            <div className="flex gap-1 overflow-x-auto no-scrollbar pb-1 -mx-1 px-1">
-              {([
-                { key: 'pending' as const, label: 'Pending', icon: Clock, color: 'amber' },
-                { key: 'approved' as const, label: 'Approved', icon: CheckCircle, color: 'emerald' },
-                { key: 'rejected' as const, label: 'Rejected', icon: XCircle, color: 'red' },
-              ]).map(({ key, label, icon: Icon, color }) => (
-                <button
-                  key={key}
-                  onClick={() => setActiveTab(key)}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap shrink-0",
-                    activeTab === key
-                      ? `bg-${color}-500/10 text-${color}-300`
-                      : 'text-white/40 hover:text-white/70 hover:bg-white/[0.03]'
-                  )}
-                >
-                  <Icon className="w-3.5 h-3.5" /> {label}
-                </button>
-              ))}
-            </div>
-
-            {loading ? (
-              <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 text-indigo-500 animate-spin" /></div>
-            ) : slangs.length > 0 ? (
-              <div className="grid gap-4">
-                <AnimatePresence mode="popLayout">
-                  {slangs.map((slang, i) => (
-                    <motion.div key={slang.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ delay: i * 0.03 }}>
-                      <SlangCard slang={slang} isModeratorView onApprove={handleApprove} onReject={handleReject} onEdit={(id) => navigate(`/edit/${id}`)} />
-                    </motion.div>
+        {activeMenu === 'review' && (() => {
+          const filtered = slangs.filter(s =>
+            !reviewSearch || s.word.toLowerCase().includes(reviewSearch.toLowerCase()) ||
+            (s.meaning && s.meaning.toLowerCase().includes(reviewSearch.toLowerCase())) ||
+            (s.author_name && s.author_name.toLowerCase().includes(reviewSearch.toLowerCase()))
+          );
+          return (
+            <div className="space-y-4">
+              {/* Tabs + Search */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="flex gap-1 overflow-x-auto no-scrollbar shrink-0">
+                  {([
+                    { key: 'pending' as const, label: 'Pending', icon: Clock, color: 'amber' },
+                    { key: 'approved' as const, label: 'Approved', icon: CheckCircle, color: 'emerald' },
+                    { key: 'rejected' as const, label: 'Rejected', icon: XCircle, color: 'red' },
+                  ]).map(({ key, label, icon: Icon, color }) => (
+                    <button
+                      key={key}
+                      onClick={() => { setActiveTab(key); setReviewSearch(''); }}
+                      className={cn(
+                        "flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap shrink-0",
+                        activeTab === key
+                          ? `bg-${color}-500/10 text-${color}-300`
+                          : 'text-white/40 hover:text-white/70 hover:bg-white/[0.03]'
+                      )}
+                    >
+                      <Icon className="w-3.5 h-3.5" /> {label}
+                      {activeTab === key && <span className="text-[10px] bg-white/[0.06] px-1.5 py-0.5 rounded-md ml-0.5">{filtered.length}</span>}
+                    </button>
                   ))}
-                </AnimatePresence>
+                </div>
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                  <input
+                    type="text"
+                    placeholder="Search word, meaning, or author..."
+                    value={reviewSearch}
+                    onChange={(e) => setReviewSearch(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-indigo-500/30 transition-all"
+                  />
+                </div>
               </div>
-            ) : (
-              <EmptyState icon={<ShieldAlert className="w-8 h-8 text-white/15" />} title="All caught up!" subtitle={`No ${activeTab} submissions.`} />
-            )}
-          </div>
-        )}
+
+              {loading ? (
+                <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 text-indigo-500 animate-spin" /></div>
+              ) : filtered.length > 0 ? (
+                <div className="space-y-2">
+                  <AnimatePresence mode="popLayout">
+                    {filtered.map((slang, i) => (
+                      <motion.div
+                        key={slang.id}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.97 }}
+                        transition={{ delay: i * 0.02 }}
+                        className="flex flex-col sm:flex-row sm:items-center gap-3 p-3.5 bg-surface-raised/80 rounded-xl border border-white/[0.04] hover:border-white/[0.07] transition-colors"
+                      >
+                        {/* Word + meaning */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-display font-bold text-white text-base">{slang.word}</span>
+                            {slang.pronunciation && (
+                              <span className="text-xs text-text-secondary font-medium">/{slang.pronunciation}/</span>
+                            )}
+                            {slang.is_nsfw && (
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-red-500/10 text-red-400 border border-red-500/15">
+                                <AlertTriangle className="w-2.5 h-2.5" /> NSFW
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-white/50 text-sm line-clamp-1">{slang.meaning}</p>
+                          <div className="flex items-center gap-3 mt-1.5">
+                            <span className="text-[11px] text-text-secondary">by {slang.author_name || 'Anonymous'}</span>
+                            <span className="flex items-center gap-1 text-[11px] text-white/20">
+                              <ThumbsUp className="w-3 h-3" /> {slang.upvotes || 0}
+                            </span>
+                            <span className="flex items-center gap-1 text-[11px] text-white/20">
+                              <Eye className="w-3 h-3" /> {slang.views || 0}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {slang.status !== 'approved' && (
+                            <button
+                              onClick={() => handleApprove(slang.id)}
+                              className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/15 text-xs font-semibold transition-all border border-emerald-500/15"
+                            >
+                              <CheckCircle className="w-3.5 h-3.5" /> Approve
+                            </button>
+                          )}
+                          {slang.status !== 'rejected' && (
+                            <button
+                              onClick={() => handleReject(slang.id)}
+                              className="flex items-center gap-1 px-2.5 py-1.5 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/15 text-xs font-semibold transition-all border border-red-500/15"
+                            >
+                              <XCircle className="w-3.5 h-3.5" /> Reject
+                            </button>
+                          )}
+                          <button
+                            onClick={() => navigate(`/edit/${slang.id}`)}
+                            className="flex items-center gap-1 px-2.5 py-1.5 bg-indigo-500/10 text-indigo-400 rounded-lg hover:bg-indigo-500/15 text-xs font-semibold transition-all border border-indigo-500/15"
+                          >
+                            <Edit className="w-3.5 h-3.5" /> Edit
+                          </button>
+                          <Link
+                            to={`/slang/${slang.slug || slang.id}`}
+                            target="_blank"
+                            className="flex items-center gap-1 px-2.5 py-1.5 bg-white/[0.03] border border-white/[0.06] text-white/40 hover:text-white/70 rounded-lg text-xs font-semibold transition-all"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              ) : reviewSearch ? (
+                <EmptyState icon={<Search className="w-8 h-8 text-white/15" />} title="No results" subtitle={`No matches for "${reviewSearch}".`} />
+              ) : (
+                <EmptyState icon={<ShieldAlert className="w-8 h-8 text-white/15" />} title="All caught up!" subtitle={`No ${activeTab} submissions.`} />
+              )}
+            </div>
+          );
+        })()}
 
         {/* Duplicates */}
         {activeMenu === 'duplicates' && (
