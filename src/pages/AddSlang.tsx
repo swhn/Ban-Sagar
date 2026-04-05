@@ -57,9 +57,9 @@ export function AddSlang() {
       if (result.examples && result.examples.length > 0) {
         setExamples(result.examples.slice(0, 5));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Gemini error:', error);
-      setErrorMsg('AI generation failed. Fill in manually or try again.');
+      setErrorMsg(error?.message || 'AI generation failed. Fill in manually or try again.');
     } finally {
       setIsGenerating(false);
     }

@@ -10,7 +10,7 @@ interface GeneratedSlang {
 
 export async function generateSlangDetails(word: string): Promise<GeneratedSlang> {
   if (!GEMINI_API_KEY) {
-    throw new Error('Gemini API key not configured');
+    throw new Error('VITE_GEMINI_API_KEY is not set. Add it to your environment variables.');
   }
 
   const prompt = `You are an expert on Myanmar (Burmese) street slang and informal language.
@@ -34,30 +34,41 @@ Rules:
 - is_nsfw should be true if the word is vulgar, sexual, or offensive
 - Return ONLY the JSON object, nothing else`;
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-    {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+  let res: Response;
+  try {
+    res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7 },
+        generationConfig: {
+          temperature: 0.7,
+          responseMimeType: 'application/json',
+        },
       }),
-    }
-  );
+    });
+  } catch (err) {
+    throw new Error(`Network error calling Gemini API: ${err}`);
+  }
 
   if (!res.ok) {
-    throw new Error(`Gemini API error: ${res.status}`);
+    const body = await res.text().catch(() => '');
+    throw new Error(`Gemini API ${res.status}: ${body.slice(0, 200)}`);
   }
 
   const data = await res.json();
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
   if (!text) {
-    throw new Error('No response from Gemini');
+    throw new Error('Empty response from Gemini. The word may not be recognized.');
   }
 
-  // Strip markdown code fences if present
-  const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-  return JSON.parse(cleaned) as GeneratedSlang;
+  try {
+    const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+    return JSON.parse(cleaned) as GeneratedSlang;
+  } catch {
+    throw new Error(`Failed to parse Gemini response: ${text.slice(0, 200)}`);
+  }
 }
