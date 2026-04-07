@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { Link } from 'react-router-dom';
 import { SlangData } from '../lib/database.types';
-import { Search, TrendingUp, Clock, ThumbsUp, Shuffle, Sparkles, BookOpen, ArrowRight, Eye, AlertTriangle } from 'lucide-react';
+import { Search, TrendingUp, Clock, ThumbsUp, Shuffle, Sparkles, BookOpen, ArrowRight, Eye, AlertTriangle, PenLine } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GradientBackground } from '../components/GradientBackground';
 import { LoadingGrid } from '../components/LoadingSkeleton';
@@ -154,7 +154,7 @@ export function Home() {
             {' '}Dictionary
           </h1>
           <p className="text-base sm:text-lg text-text-secondary max-w-xl mx-auto leading-relaxed mt-4 px-4">
-            Discover, learn, and contribute to the living language of Myanmar.
+            Discover and learn the living language of Myanmar streets.
           </p>
         </div>
       </motion.div>
@@ -354,6 +354,30 @@ export function Home() {
           <p className="text-text-secondary mt-1.5 text-sm">Try a different search or contribute a new word!</p>
         </motion.div>
       )}
+
+      {/* Contribute CTA */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+        className="max-w-2xl mx-auto"
+      >
+        <Link
+          to="/contribute"
+          className="group flex items-center justify-between p-5 sm:p-6 bg-gradient-to-r from-indigo-500/[0.06] to-purple-500/[0.06] rounded-2xl border border-indigo-500/10 hover:border-indigo-500/20 transition-all"
+        >
+          <div className="flex items-center gap-4">
+            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2.5 rounded-xl text-white shadow-lg shadow-indigo-500/15">
+              <PenLine className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-display font-bold text-white text-base">Contribute to the Dictionary</h3>
+              <p className="text-text-secondary text-sm mt-0.5">Add words, earn badges, climb the leaderboard</p>
+            </div>
+          </div>
+          <ArrowRight className="w-5 h-5 text-white/20 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all shrink-0" />
+        </Link>
+      </motion.div>
     </div>
   );
 }

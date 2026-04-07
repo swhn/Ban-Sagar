@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { BookOpen, LogIn, LogOut, Shield, PlusCircle, Sparkles, Trophy, Home, Menu, X, EyeOff, Eye } from 'lucide-react';
+import { BookOpen, LogIn, LogOut, Shield, PlusCircle, Sparkles, Home, Menu, X, Users, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
 export function Layout() {
-  const { user, appUser, login, logout, toggleNsfw } = useAuth();
+  const { user, appUser, login, logout } = useAuth();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -53,26 +53,17 @@ export function Layout() {
               <Home className="w-4 h-4" /> Home
             </Link>
             <Link
-              to="/leaderboard"
+              to="/contribute"
               className={cn(
                 "flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-all",
-                isActive('/leaderboard') ? "text-amber-300 bg-amber-500/10" : "text-white/50 hover:text-amber-300 hover:bg-white/[0.03]"
+                isActive('/contribute') ? "text-emerald-300 bg-emerald-500/10" : "text-white/50 hover:text-emerald-300 hover:bg-white/[0.03]"
               )}
             >
-              <Trophy className="w-4 h-4" /> Leaderboard
+              <Users className="w-4 h-4" /> Contribute
             </Link>
 
             {user && (
               <>
-                <Link
-                  to="/add"
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-all",
-                    isActive('/add') ? "text-indigo-300 bg-indigo-500/10" : "text-white/50 hover:text-indigo-400 hover:bg-white/[0.03]"
-                  )}
-                >
-                  <PlusCircle className="w-4 h-4" /> Add Slang
-                </Link>
 
                 {(appUser?.role === 'moderator' || appUser?.role === 'admin') && (
                   <Link
@@ -92,38 +83,19 @@ export function Layout() {
 
             {user ? (
               <div className="flex items-center gap-2.5">
-                <button
-                  onClick={toggleNsfw}
-                  title={appUser?.show_nsfw ? 'Hide NSFW content' : 'Show NSFW content'}
-                  className={cn(
-                    "p-2 rounded-lg transition-all text-xs font-semibold flex items-center gap-1.5",
-                    appUser?.show_nsfw
-                      ? "text-red-400 bg-red-500/10 hover:bg-red-500/15"
-                      : "text-white/25 hover:text-white/50 hover:bg-white/5"
-                  )}
-                >
-                  {appUser?.show_nsfw ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                  <span className="hidden lg:inline">NSFW</span>
-                </button>
-                <div className="h-6 w-px bg-white/[0.06]" />
                 <div className="flex flex-col items-end">
                   <span className="text-sm font-semibold leading-none text-white/90">{appUser?.display_name || 'User'}</span>
                   <span className="text-[10px] uppercase tracking-wider font-bold text-indigo-400 mt-0.5">{appUser?.role}</span>
                 </div>
-                {user.user_metadata?.avatar_url ? (
-                  <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-8 h-8 rounded-full ring-2 ring-white/10" referrerPolicy="no-referrer" />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-xs ring-2 ring-white/10">
-                    {(appUser?.display_name || 'U')[0].toUpperCase()}
-                  </div>
-                )}
-                <button
-                  onClick={logout}
-                  className="p-2 text-white/25 hover:text-red-400 transition-colors rounded-lg hover:bg-white/5"
-                  title="Log out"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
+                <Link to="/profile" className="group relative" title="Profile Settings">
+                  {user.user_metadata?.avatar_url ? (
+                    <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-8 h-8 rounded-full ring-2 ring-white/10 group-hover:ring-indigo-500/40 transition-all" referrerPolicy="no-referrer" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-xs ring-2 ring-white/10 group-hover:ring-indigo-500/40 transition-all">
+                      {(appUser?.display_name || 'U')[0].toUpperCase()}
+                    </div>
+                  )}
+                </Link>
               </div>
             ) : (
               <button
@@ -173,15 +145,12 @@ export function Layout() {
                 <Link to="/" className={cn("flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all", isActive('/') ? "bg-white/5 text-white" : "text-white/60")}>
                   <Home className="w-5 h-5" /> Home
                 </Link>
-                <Link to="/leaderboard" className={cn("flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all", isActive('/leaderboard') ? "bg-amber-500/10 text-amber-300" : "text-white/60")}>
-                  <Trophy className="w-5 h-5" /> Leaderboard
+                <Link to="/contribute" className={cn("flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all", isActive('/contribute') ? "bg-emerald-500/10 text-emerald-300" : "text-white/60")}>
+                  <Users className="w-5 h-5" /> Contribute
                 </Link>
 
                 {user && (
                   <>
-                    <Link to="/add" className={cn("flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all", isActive('/add') ? "bg-indigo-500/10 text-indigo-300" : "text-white/60")}>
-                      <PlusCircle className="w-5 h-5" /> Add Slang
-                    </Link>
                     {(appUser?.role === 'moderator' || appUser?.role === 'admin') && (
                       <Link to="/dashboard" className={cn("flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all", isActive('/dashboard') ? "bg-amber-500/10 text-amber-300" : "text-amber-400/70")}>
                         <Shield className="w-5 h-5" /> Dashboard
@@ -192,41 +161,31 @@ export function Layout() {
 
                 <div className="h-px bg-white/[0.06] my-2" />
 
-                {user && (
-                  <button
-                    onClick={toggleNsfw}
-                    className={cn(
-                      "flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all w-full text-left",
-                      appUser?.show_nsfw ? "text-red-400 bg-red-500/10" : "text-white/60"
-                    )}
-                  >
-                    {appUser?.show_nsfw ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
-                    NSFW {appUser?.show_nsfw ? 'On' : 'Off'}
-                  </button>
-                )}
-
                 {user ? (
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      {user.user_metadata?.avatar_url ? (
-                        <img src={user.user_metadata.avatar_url} alt="" className="w-9 h-9 rounded-full ring-2 ring-white/10" referrerPolicy="no-referrer" />
-                      ) : (
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-sm">
-                          {(appUser?.display_name || 'U')[0].toUpperCase()}
+                  <>
+                    <Link to="/profile" className="flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/[0.03] transition-all">
+                      <div className="flex items-center gap-3">
+                        {user.user_metadata?.avatar_url ? (
+                          <img src={user.user_metadata.avatar_url} alt="" className="w-9 h-9 rounded-full ring-2 ring-white/10" referrerPolicy="no-referrer" />
+                        ) : (
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-sm">
+                            {(appUser?.display_name || 'U')[0].toUpperCase()}
+                          </div>
+                        )}
+                        <div>
+                          <p className="text-sm font-semibold text-white">{appUser?.display_name || 'User'}</p>
+                          <p className="text-[10px] uppercase tracking-wider font-bold text-indigo-400">{appUser?.role}</p>
                         </div>
-                      )}
-                      <div>
-                        <p className="text-sm font-semibold text-white">{appUser?.display_name || 'User'}</p>
-                        <p className="text-[10px] uppercase tracking-wider font-bold text-indigo-400">{appUser?.role}</p>
                       </div>
-                    </div>
+                      <Settings className="w-4 h-4 text-white/30" />
+                    </Link>
                     <button
                       onClick={logout}
-                      className="p-2.5 text-white/30 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
+                      className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all text-white/40 hover:text-red-400 hover:bg-red-500/10 w-full text-left"
                     >
-                      <LogOut className="w-5 h-5" />
+                      <LogOut className="w-5 h-5" /> Sign Out
                     </button>
-                  </div>
+                  </>
                 ) : (
                   <button
                     onClick={login}
@@ -281,14 +240,14 @@ export function Layout() {
             <span className="text-[10px] font-semibold">Home</span>
           </Link>
           <Link
-            to="/leaderboard"
+            to="/contribute"
             className={cn(
               "flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all min-w-[56px]",
-              isActive('/leaderboard') ? "text-amber-300" : "text-white/35"
+              isActive('/contribute') ? "text-emerald-300" : "text-white/35"
             )}
           >
-            <Trophy className="w-5 h-5" />
-            <span className="text-[10px] font-semibold">Ranks</span>
+            <Users className="w-5 h-5" />
+            <span className="text-[10px] font-semibold">Contribute</span>
           </Link>
           {user && (
             <Link
@@ -298,37 +257,30 @@ export function Layout() {
               <PlusCircle className="w-6 h-6" />
             </Link>
           )}
-          {user && (appUser?.role === 'moderator' || appUser?.role === 'admin') ? (
+          {user ? (
             <Link
-              to="/dashboard"
+              to="/profile"
               className={cn(
                 "flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all min-w-[56px]",
-                isActive('/dashboard') ? "text-amber-300" : "text-white/35"
+                isActive('/profile') ? "text-indigo-300" : "text-white/35"
               )}
             >
-              <Shield className="w-5 h-5" />
-              <span className="text-[10px] font-semibold">Admin</span>
+              {user.user_metadata?.avatar_url ? (
+                <img src={user.user_metadata.avatar_url} alt="" className="w-5 h-5 rounded-full" referrerPolicy="no-referrer" />
+              ) : (
+                <Settings className="w-5 h-5" />
+              )}
+              <span className="text-[10px] font-semibold">Profile</span>
             </Link>
           ) : (
-            <Link
-              to={user ? "/add" : "/"}
-              className={cn(
-                "flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all min-w-[56px]",
-                "text-white/35"
-              )}
-              onClick={!user ? login : undefined}
+            <button
+              onClick={login}
+              className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all min-w-[56px] text-white/35"
             >
-              <PlusCircle className="w-5 h-5" />
-              <span className="text-[10px] font-semibold">Add</span>
-            </Link>
+              <LogIn className="w-5 h-5" />
+              <span className="text-[10px] font-semibold">Sign In</span>
+            </button>
           )}
-          <button
-            onClick={user ? logout : login}
-            className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all min-w-[56px] text-white/35"
-          >
-            {user ? <LogOut className="w-5 h-5" /> : <LogIn className="w-5 h-5" />}
-            <span className="text-[10px] font-semibold">{user ? 'Out' : 'In'}</span>
-          </button>
         </div>
       </nav>
 
