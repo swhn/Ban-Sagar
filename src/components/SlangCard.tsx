@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ThumbsUp, ThumbsDown, Clock, User, CheckCircle, XCircle, Edit, Eye, Quote, AlertTriangle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ThumbsUp, ThumbsDown, Clock, User, CheckCircle, XCircle, Edit, Eye, Quote, AlertTriangle, MessageSquarePlus, Send, X, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,12 +17,20 @@ interface SlangCardProps {
 
 export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, onApprove, onReject, onEdit }) => {
   const { user, appUser } = useAuth();
+  const navigate = useNavigate();
   const isNsfwBlurred = slang.is_nsfw && !appUser?.show_nsfw;
 
   const [userVote, setUserVote] = useState<VoteType | null>(null);
   const [optimisticUpvotes, setOptimisticUpvotes] = useState(slang.upvotes);
   const [optimisticDownvotes, setOptimisticDownvotes] = useState(slang.downvotes);
   const [voteAnimating, setVoteAnimating] = useState<'up' | 'down' | null>(null);
+
+  // Suggest state
+  const [showSuggest, setShowSuggest] = useState(false);
+  const [suggestField, setSuggestField] = useState<string>('general');
+  const [suggestValue, setSuggestValue] = useState('');
+  const [suggestSending, setSuggestSending] = useState(false);
+  const [suggestSent, setSuggestSent] = useState(false);
 
   useEffect(() => {
     setOptimisticUpvotes(slang.upvotes);
@@ -84,6 +93,37 @@ export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, on
       setOptimisticUpvotes(slang.upvotes);
       setOptimisticDownvotes(slang.downvotes);
       console.error('Vote error:', error);
+    }
+  };
+
+  const handleSuggest = async () => {
+    if (!user || !suggestValue.trim()) return;
+    setSuggestSending(true);
+    try {
+      await supabase.from('suggestions').insert({
+        slang_id: slang.id,
+        user_id: user.id,
+        user_name: appUser?.display_name || null,
+        field: suggestField,
+        value: suggestValue.trim(),
+      });
+      setSuggestSent(true);
+      setTimeout(() => {
+        setShowSuggest(false);
+        setSuggestSent(false);
+        setSuggestValue('');
+        setSuggestField('general');
+      }, 1500);
+    } catch (error) {
+      console.error('Suggestion error:', error);
+    } finally {
+      setSuggestSending(false);
+    }
+  };
+
+  const handleNsfwClick = () => {
+    if (user) {
+      navigate('/profile');
     }
   };
 
@@ -188,11 +228,20 @@ export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, on
           </div>
 
           {isNsfwBlurred && (
-            <div className="absolute inset-0 flex items-center justify-center">
+            <div
+              className={cn("absolute inset-0 flex items-center justify-center", user && "cursor-pointer")}
+              onClick={handleNsfwClick}
+            >
               <div className="text-center px-4">
                 <AlertTriangle className="w-8 h-8 text-red-400/60 mx-auto mb-2" />
                 <p className="text-sm font-semibold text-white/70">NSFW Content</p>
-                <p className="text-xs text-white/40 mt-1">Sign in and enable NSFW in your profile to view</p>
+                {user ? (
+                  <p className="text-xs text-indigo-400/70 mt-1 hover:text-indigo-400 transition-colors">
+                    Tap to go to NSFW settings
+                  </p>
+                ) : (
+                  <p className="text-xs text-white/40 mt-1">Sign in to enable NSFW content</p>
+                )}
               </div>
             </div>
           )}
@@ -200,53 +249,72 @@ export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, on
 
         {/* Footer */}
         <div className="mt-6 pt-4 border-t border-white/[0.04] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          {/* Vote buttons */}
-          <div className="flex items-center gap-1 bg-white/[0.02] p-1 rounded-xl border border-white/[0.04] w-fit">
-            <motion.button
-              onClick={() => handleVote('up')}
-              animate={voteAnimating === 'up' ? { scale: [1, 1.15, 1] } : {}}
-              transition={{ duration: 0.3 }}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-sm font-semibold",
-                userVote === 'up' ? "text-indigo-400 bg-indigo-500/10" : "text-white/40 hover:bg-white/[0.04] hover:text-white/70"
-              )}
-            >
-              <ThumbsUp className={cn("w-4 h-4", userVote === 'up' && "fill-indigo-400")} />
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={optimisticUpvotes}
-                  initial={{ y: -8, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: 8, opacity: 0 }}
-                  transition={{ duration: 0.12 }}
-                >
-                  {optimisticUpvotes}
-                </motion.span>
-              </AnimatePresence>
-            </motion.button>
-            <div className="w-px h-5 bg-white/[0.06]" />
-            <motion.button
-              onClick={() => handleVote('down')}
-              animate={voteAnimating === 'down' ? { scale: [1, 1.15, 1] } : {}}
-              transition={{ duration: 0.3 }}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-sm font-semibold",
-                userVote === 'down' ? "text-red-400 bg-red-500/10" : "text-white/40 hover:bg-white/[0.04] hover:text-white/70"
-              )}
-            >
-              <ThumbsDown className={cn("w-4 h-4", userVote === 'down' && "fill-red-400")} />
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={optimisticDownvotes}
-                  initial={{ y: -8, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: 8, opacity: 0 }}
-                  transition={{ duration: 0.12 }}
-                >
-                  {optimisticDownvotes}
-                </motion.span>
-              </AnimatePresence>
-            </motion.button>
+          {/* Vote buttons + Suggest */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 bg-white/[0.02] p-1 rounded-xl border border-white/[0.04] w-fit">
+              <motion.button
+                onClick={() => handleVote('up')}
+                animate={voteAnimating === 'up' ? { scale: [1, 1.15, 1] } : {}}
+                transition={{ duration: 0.3 }}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-sm font-semibold",
+                  userVote === 'up' ? "text-indigo-400 bg-indigo-500/10" : "text-white/40 hover:bg-white/[0.04] hover:text-white/70"
+                )}
+              >
+                <ThumbsUp className={cn("w-4 h-4", userVote === 'up' && "fill-indigo-400")} />
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={optimisticUpvotes}
+                    initial={{ y: -8, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 8, opacity: 0 }}
+                    transition={{ duration: 0.12 }}
+                  >
+                    {optimisticUpvotes}
+                  </motion.span>
+                </AnimatePresence>
+              </motion.button>
+              <div className="w-px h-5 bg-white/[0.06]" />
+              <motion.button
+                onClick={() => handleVote('down')}
+                animate={voteAnimating === 'down' ? { scale: [1, 1.15, 1] } : {}}
+                transition={{ duration: 0.3 }}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-sm font-semibold",
+                  userVote === 'down' ? "text-red-400 bg-red-500/10" : "text-white/40 hover:bg-white/[0.04] hover:text-white/70"
+                )}
+              >
+                <ThumbsDown className={cn("w-4 h-4", userVote === 'down' && "fill-red-400")} />
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={optimisticDownvotes}
+                    initial={{ y: -8, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 8, opacity: 0 }}
+                    transition={{ duration: 0.12 }}
+                  >
+                    {optimisticDownvotes}
+                  </motion.span>
+                </AnimatePresence>
+              </motion.button>
+            </div>
+
+            {/* Suggest button - only for approved slangs and logged-in users */}
+            {user && slang.status === 'approved' && !isModeratorView && (
+              <button
+                onClick={() => setShowSuggest(!showSuggest)}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all active:scale-95",
+                  showSuggest
+                    ? "text-amber-400 bg-amber-500/10 border border-amber-500/15"
+                    : "text-white/35 hover:text-amber-400 hover:bg-amber-500/10"
+                )}
+                title="Suggest an improvement"
+              >
+                <MessageSquarePlus className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Suggest</span>
+              </button>
+            )}
           </div>
 
           {/* Date */}
@@ -255,6 +323,72 @@ export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, on
             {formatDate(slang.created_at)}
           </span>
         </div>
+
+        {/* Suggest Form */}
+        <AnimatePresence>
+          {showSuggest && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="mt-4 p-4 bg-amber-500/[0.04] rounded-xl border border-amber-500/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <MessageSquarePlus className="w-3.5 h-3.5" /> Suggest Improvement
+                  </h4>
+                  <button onClick={() => setShowSuggest(false)} className="text-white/30 hover:text-white/60 transition-colors">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {suggestSent ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex items-center gap-2 text-emerald-400 text-sm font-medium py-2"
+                  >
+                    <CheckCircle className="w-4 h-4" /> Suggestion sent! Moderators will review it.
+                  </motion.div>
+                ) : (
+                  <>
+                    <select
+                      value={suggestField}
+                      onChange={(e) => setSuggestField(e.target.value)}
+                      className="w-full px-3 py-2 bg-surface/80 border border-white/[0.06] rounded-lg text-sm text-white outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/20"
+                    >
+                      <option value="general">General improvement</option>
+                      <option value="meaning">English meaning</option>
+                      <option value="meaning_burmese">Burmese meaning</option>
+                      <option value="examples">Examples</option>
+                      <option value="pronunciation">Pronunciation</option>
+                    </select>
+                    <textarea
+                      value={suggestValue}
+                      onChange={(e) => setSuggestValue(e.target.value)}
+                      placeholder="Describe your suggestion..."
+                      maxLength={2000}
+                      rows={3}
+                      className="w-full px-3 py-2.5 bg-surface/80 border border-white/[0.06] rounded-lg text-sm text-white placeholder-white/20 outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/20 resize-none"
+                    />
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-white/20">{suggestValue.length}/2000</span>
+                      <button
+                        onClick={handleSuggest}
+                        disabled={suggestSending || !suggestValue.trim()}
+                        className="flex items-center gap-1.5 px-4 py-2 bg-amber-500/15 text-amber-400 hover:bg-amber-500/20 rounded-lg text-xs font-semibold transition-all disabled:opacity-40 border border-amber-500/15"
+                      >
+                        {suggestSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                        Send
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   );

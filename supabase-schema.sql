@@ -52,6 +52,17 @@ CREATE TABLE votes (
   UNIQUE(user_id, slang_id)
 );
 
+CREATE TABLE suggestions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  slang_id UUID NOT NULL REFERENCES slangs(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  user_name TEXT,
+  field TEXT NOT NULL CHECK (field IN ('meaning', 'meaning_burmese', 'examples', 'pronunciation', 'general')),
+  value TEXT NOT NULL CHECK (char_length(value) BETWEEN 1 AND 2000),
+  status slang_status NOT NULL DEFAULT 'pending',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 -- ============================================================
 -- 3. INDEXES
 -- ============================================================
@@ -63,6 +74,9 @@ CREATE INDEX idx_votes_user_slang ON votes(user_id, slang_id);
 CREATE INDEX idx_votes_slang_id ON votes(slang_id);
 CREATE INDEX idx_slangs_is_nsfw ON slangs(is_nsfw);
 CREATE INDEX idx_slangs_slug ON slangs(slug);
+CREATE INDEX idx_suggestions_slang_id ON suggestions(slang_id);
+CREATE INDEX idx_suggestions_user_id ON suggestions(user_id);
+CREATE INDEX idx_suggestions_status ON suggestions(status);
 
 -- ============================================================
 -- 4. TRIGGERS: Auto-admin elevation
@@ -249,6 +263,25 @@ CREATE POLICY "Users can update own votes"
 CREATE POLICY "Users can delete own votes"
   ON votes FOR DELETE
   USING (auth.uid() IS NOT NULL AND user_id = auth.uid());
+
+-- Suggestions policies
+ALTER TABLE suggestions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can read own suggestions or mods see all"
+  ON suggestions FOR SELECT
+  USING (user_id = auth.uid() OR is_moderator_or_admin(auth.uid()));
+
+CREATE POLICY "Authenticated users can create suggestions"
+  ON suggestions FOR INSERT
+  WITH CHECK (auth.uid() IS NOT NULL AND user_id = auth.uid());
+
+CREATE POLICY "Only moderators can update suggestions"
+  ON suggestions FOR UPDATE
+  USING (is_moderator_or_admin(auth.uid()));
+
+CREATE POLICY "Users can delete own pending suggestions"
+  ON suggestions FOR DELETE
+  USING (user_id = auth.uid() AND status = 'pending');
 
 -- ============================================================
 -- 10. REALTIME

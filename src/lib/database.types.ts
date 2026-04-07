@@ -39,3 +39,16 @@ export interface Vote {
   vote_type: VoteType;
   created_at: string;
 }
+
+export type SuggestionStatus = 'pending' | 'approved' | 'rejected';
+
+export interface Suggestion {
+  id: string;
+  slang_id: string;
+  user_id: string;
+  user_name: string | null;
+  field: string;
+  value: string;
+  status: SuggestionStatus;
+  created_at: string;
+}

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { User, Settings, LogOut, Eye, EyeOff, Loader2, CheckCircle, AlertCircle, Save } from 'lucide-react';
+import { User, Settings, LogOut, Eye, EyeOff, Loader2, CheckCircle, AlertCircle, Save, ShieldAlert, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
@@ -12,6 +12,7 @@ export function Profile() {
   const [displayName, setDisplayName] = useState(appUser?.display_name || '');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [showNsfwWarning, setShowNsfwWarning] = useState(false);
 
   const handleSave = async () => {
     if (!appUser || !displayName.trim()) return;
@@ -28,6 +29,22 @@ export function Profile() {
     }
     setSaving(false);
     setTimeout(() => setMessage(null), 3000);
+  };
+
+  const handleNsfwToggle = () => {
+    if (!appUser) return;
+    // If turning ON, show warning first
+    if (!appUser.show_nsfw) {
+      setShowNsfwWarning(true);
+    } else {
+      // Turning OFF doesn't need confirmation
+      toggleNsfw();
+    }
+  };
+
+  const confirmNsfw = () => {
+    toggleNsfw();
+    setShowNsfwWarning(false);
   };
 
   const handleLogout = async () => {
@@ -126,7 +143,7 @@ export function Profile() {
               Content Preferences
             </label>
             <button
-              onClick={toggleNsfw}
+              onClick={handleNsfwToggle}
               className={cn(
                 "flex items-center gap-3 w-full px-4 py-3.5 rounded-xl border transition-all text-left",
                 appUser.show_nsfw
@@ -164,6 +181,77 @@ export function Profile() {
       >
         <LogOut className="w-4 h-4" /> Sign Out
       </button>
+
+      {/* NSFW Warning Modal */}
+      <AnimatePresence>
+        {showNsfwWarning && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
+              onClick={() => setShowNsfwWarning(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="bg-surface-raised border border-red-500/15 rounded-2xl max-w-sm w-full p-6 shadow-2xl shadow-red-500/10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
+                      <ShieldAlert className="w-5 h-5 text-red-400" />
+                    </div>
+                    <h3 className="text-lg font-display font-bold text-white">Content Warning</h3>
+                  </div>
+                  <button
+                    onClick={() => setShowNsfwWarning(false)}
+                    className="p-1.5 text-white/30 hover:text-white/60 transition-colors rounded-lg hover:bg-white/5"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="space-y-3 mb-6">
+                  <p className="text-sm text-white/70 leading-relaxed">
+                    You are about to enable <span className="font-semibold text-red-400">NSFW content</span>. This will reveal explicit slang words that are currently blurred.
+                  </p>
+                  <div className="bg-red-500/[0.06] border border-red-500/10 rounded-xl p-3 space-y-1.5">
+                    <p className="text-xs text-red-400/80 font-semibold flex items-center gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5" /> Please note:
+                    </p>
+                    <ul className="text-xs text-white/50 space-y-1 ml-5 list-disc">
+                      <li>Content may include vulgar or offensive language</li>
+                      <li>This is for educational/reference purposes only</li>
+                      <li>You can turn this off anytime from your profile</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowNsfwWarning(false)}
+                    className="flex-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.06] text-white/60 hover:text-white hover:bg-white/[0.06] rounded-xl text-sm font-semibold transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmNsfw}
+                    className="flex-1 px-4 py-2.5 bg-red-500/15 border border-red-500/20 text-red-400 hover:bg-red-500/20 rounded-xl text-sm font-semibold transition-all"
+                  >
+                    Enable NSFW
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
