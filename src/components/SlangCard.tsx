@@ -249,17 +249,11 @@ export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, on
             </motion.button>
           </div>
 
-          {/* Author + date */}
-          <div className="flex items-center gap-3 text-xs text-text-secondary font-medium">
-            <span className="flex items-center gap-1.5">
-              <User className="w-3.5 h-3.5 text-white/20" />
-              {slang.author_name || 'Anonymous'}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-white/20" />
-              {formatDate(slang.created_at)}
-            </span>
-          </div>
+          {/* Date */}
+          <span className="flex items-center gap-1.5 text-xs text-text-secondary font-medium">
+            <Clock className="w-3.5 h-3.5 text-white/20" />
+            {formatDate(slang.created_at)}
+          </span>
         </div>
       </div>
     </motion.div>
