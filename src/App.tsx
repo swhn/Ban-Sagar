@@ -4,6 +4,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
 import { AddSlang } from './pages/AddSlang';
+import { Dashboard } from './pages/Dashboard';
 import { SlangDetail } from './pages/SlangDetail';
 import { EditSlang } from './pages/EditSlang';
 import { Contribute } from './pages/Contribute';
@@ -19,8 +20,8 @@ export default function App() {
             <Route path="add" element={<AddSlang />} />
             <Route path="contribute" element={<Contribute />} />
             <Route path="profile" element={<Profile />} />
+            <Route path="dashboard" element={<Dashboard />} />
             <Route path="leaderboard" element={<Navigate to="/contribute" replace />} />
-            <Route path="dashboard" element={<Navigate to="/contribute" replace />} />
             <Route path="slang/:slug" element={<SlangDetail />} />
             <Route path="edit/:id" element={<EditSlang />} />
           </Route>

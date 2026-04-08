@@ -64,6 +64,22 @@ CREATE TABLE suggestions (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+CREATE TABLE site_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL DEFAULT '',
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Default settings
+INSERT INTO site_settings (key, value) VALUES
+  ('allow_registrations', 'true'),
+  ('require_approval', 'true'),
+  ('allow_nsfw', 'true'),
+  ('allow_suggestions', 'true'),
+  ('site_announcement', ''),
+  ('max_submissions_per_day', '20')
+ON CONFLICT (key) DO NOTHING;
+
 -- ============================================================
 -- 3. INDEXES
 -- ============================================================
@@ -283,6 +299,21 @@ CREATE POLICY "Only moderators can update suggestions"
 CREATE POLICY "Users can delete own pending suggestions"
   ON suggestions FOR DELETE
   USING (user_id = auth.uid() AND status = 'pending');
+
+-- Site settings policies
+ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can read site settings"
+  ON site_settings FOR SELECT
+  USING (true);
+
+CREATE POLICY "Only admins can insert site settings"
+  ON site_settings FOR INSERT
+  WITH CHECK (EXISTS(SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'));
+
+CREATE POLICY "Only admins can update site settings"
+  ON site_settings FOR UPDATE
+  USING (EXISTS(SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'));
 
 -- ============================================================
 -- 10. REALTIME

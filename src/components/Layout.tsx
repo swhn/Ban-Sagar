@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { BookOpen, LogIn, LogOut, PlusCircle, Sparkles, Home, Menu, X, Users, Settings } from 'lucide-react';
+import { BookOpen, LogIn, LogOut, PlusCircle, Sparkles, Home, Menu, X, Users, Settings, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
@@ -61,6 +61,18 @@ export function Layout() {
             >
               <Users className="w-4 h-4" /> Contribute
             </Link>
+
+            {user && appUser?.role === 'admin' && (
+              <Link
+                to="/dashboard"
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-all",
+                  isActive('/dashboard') ? "text-rose-300 bg-rose-500/10" : "text-white/50 hover:text-rose-300 hover:bg-white/[0.03]"
+                )}
+              >
+                <ShieldAlert className="w-4 h-4" /> Admin
+              </Link>
+            )}
 
             <div className="h-6 w-px bg-white/[0.06] mx-2" />
 
@@ -131,6 +143,11 @@ export function Layout() {
                 <Link to="/contribute" className={cn("flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all", isActive('/contribute') ? "bg-emerald-500/10 text-emerald-300" : "text-white/60")}>
                   <Users className="w-5 h-5" /> Contribute
                 </Link>
+                {user && appUser?.role === 'admin' && (
+                  <Link to="/dashboard" className={cn("flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all", isActive('/dashboard') ? "bg-rose-500/10 text-rose-300" : "text-rose-400/60")}>
+                    <ShieldAlert className="w-5 h-5" /> Admin Dashboard
+                  </Link>
+                )}
 
                 <div className="h-px bg-white/[0.06] my-2" />
 

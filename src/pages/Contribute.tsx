@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { PenLine, BookOpen, Trophy, Sparkles, Loader2, ClipboardList, Users } from 'lucide-react';
+import { PenLine, BookOpen, Trophy, Sparkles, Loader2, ClipboardList } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
 import { ContributorStats } from '../lib/achievements';
@@ -11,9 +11,8 @@ import { HistoryTab } from '../components/contribute/HistoryTab';
 import { LeaderboardTab } from '../components/contribute/LeaderboardTab';
 import { AchievementsTab } from '../components/contribute/AchievementsTab';
 import { ReviewTab } from '../components/contribute/ReviewTab';
-import { UsersTab } from '../components/contribute/UsersTab';
 
-type ContributeTab = 'add' | 'history' | 'leaderboard' | 'achievements' | 'review' | 'users';
+type ContributeTab = 'add' | 'history' | 'leaderboard' | 'achievements' | 'review';
 
 export function Contribute() {
   const { user, appUser, isAuthReady } = useAuth();
@@ -23,7 +22,6 @@ export function Contribute() {
   const [selectedUser, setSelectedUser] = useState<ContributorStats | null>(null);
 
   const isMod = appUser?.role === 'moderator' || appUser?.role === 'admin';
-  const isAdmin = appUser?.role === 'admin';
 
   useEffect(() => {
     if (activeTab === 'leaderboard' || activeTab === 'achievements' || activeTab === 'add') {
@@ -84,9 +82,6 @@ export function Contribute() {
   if (isMod) {
     tabs.push({ key: 'review', label: 'Review', shortLabel: 'Review', icon: ClipboardList });
   }
-  if (isAdmin) {
-    tabs.push({ key: 'users', label: 'Users', shortLabel: 'Users', icon: Users });
-  }
 
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl mx-auto space-y-6">
@@ -139,7 +134,6 @@ export function Contribute() {
         />
       )}
       {activeTab === 'review' && isMod && <ReviewTab />}
-      {activeTab === 'users' && isAdmin && <UsersTab />}
     </motion.div>
   );
 }
