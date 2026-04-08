@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { generateSlug } from '../lib/utils';
 import { generateSlangDetails } from '../lib/gemini';
-import { Plus, X, Loader2, BookOpen, CheckCircle, AlertCircle, AlertTriangle, Sparkles } from 'lucide-react';
+import { Plus, X, Loader2, BookOpen, CheckCircle, AlertCircle, AlertTriangle, Sparkles, Timer } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
@@ -140,6 +140,31 @@ export function AddSlang() {
         <h2 className="text-xl font-bold text-white mb-2">Sign in required</h2>
         <p className="text-text-secondary text-sm">You need to sign in to contribute.</p>
       </div>
+    );
+  }
+
+  // Cooldown check
+  const cooldownActive = appUser?.cooldown_until && new Date(appUser.cooldown_until) > new Date();
+  if (cooldownActive) {
+    const diff = new Date(appUser!.cooldown_until!).getTime() - Date.now();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(hours / 24);
+    const timeLeft = days > 0 ? `${days} day(s) and ${hours % 24} hour(s)` : `${hours} hour(s) and ${Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))} minute(s)`;
+
+    return (
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="max-w-md mx-auto text-center py-16">
+        <div className="bg-orange-500/10 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-orange-500/15">
+          <Timer className="w-8 h-8 text-orange-400" />
+        </div>
+        <h2 className="text-xl font-bold text-white mb-2">Contribution Cooldown</h2>
+        <p className="text-text-secondary text-sm mb-4 max-w-sm mx-auto">
+          Your account is temporarily on cooldown. You can submit new words again in:
+        </p>
+        <p className="text-lg font-display font-bold text-orange-400 mb-6">{timeLeft}</p>
+        <Link to="/contribute" className="text-sm text-indigo-400 font-semibold hover:text-indigo-300 transition-colors">
+          Back to Contribute
+        </Link>
+      </motion.div>
     );
   }
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { BookOpen, LogIn, LogOut, Shield, PlusCircle, Sparkles, Home, Menu, X, Users, Settings } from 'lucide-react';
+import { BookOpen, LogIn, LogOut, PlusCircle, Sparkles, Home, Menu, X, Users, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
@@ -61,23 +61,6 @@ export function Layout() {
             >
               <Users className="w-4 h-4" /> Contribute
             </Link>
-
-            {user && (
-              <>
-
-                {(appUser?.role === 'moderator' || appUser?.role === 'admin') && (
-                  <Link
-                    to="/dashboard"
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-all",
-                      isActive('/dashboard') ? "text-amber-300 bg-amber-500/10" : "text-amber-400/70 hover:text-amber-300 hover:bg-white/[0.03]"
-                    )}
-                  >
-                    <Shield className="w-4 h-4" /> Dashboard
-                  </Link>
-                )}
-              </>
-            )}
 
             <div className="h-6 w-px bg-white/[0.06] mx-2" />
 
@@ -148,16 +131,6 @@ export function Layout() {
                 <Link to="/contribute" className={cn("flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all", isActive('/contribute') ? "bg-emerald-500/10 text-emerald-300" : "text-white/60")}>
                   <Users className="w-5 h-5" /> Contribute
                 </Link>
-
-                {user && (
-                  <>
-                    {(appUser?.role === 'moderator' || appUser?.role === 'admin') && (
-                      <Link to="/dashboard" className={cn("flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all", isActive('/dashboard') ? "bg-amber-500/10 text-amber-300" : "text-amber-400/70")}>
-                        <Shield className="w-5 h-5" /> Dashboard
-                      </Link>
-                    )}
-                  </>
-                )}
 
                 <div className="h-px bg-white/[0.06] my-2" />
 

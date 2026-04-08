@@ -20,6 +20,7 @@ CREATE TABLE users (
   avatar_url TEXT,
   role user_role NOT NULL DEFAULT 'user',
   show_nsfw BOOLEAN NOT NULL DEFAULT false,
+  cooldown_until TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

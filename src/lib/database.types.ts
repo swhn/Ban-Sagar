@@ -9,6 +9,7 @@ export interface AppUser {
   avatar_url: string | null;
   role: UserRole;
   show_nsfw: boolean;
+  cooldown_until: string | null;
   created_at: string;
 }
 
