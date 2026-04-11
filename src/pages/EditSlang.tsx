@@ -1,17 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { SlangData, SlangStatus } from '../lib/database.types';
-import { Plus, X, Loader2, ArrowLeft, Edit3, CheckCircle, AlertCircle, AlertTriangle, Sparkles } from 'lucide-react';
+import { Plus, X, Loader2, ArrowLeft, Edit3, CheckCircle, AlertCircle, AlertTriangle, Sparkles, MessageSquare, Tag } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn, generateSlug } from '../lib/utils';
 import { generateSlangDetails } from '../lib/gemini';
 
+const FIELD_LABELS: Record<string, string> = {
+  meaning: 'Meaning (EN)',
+  meaning_burmese: 'Meaning (MM)',
+  examples: 'Examples',
+  pronunciation: 'Pronunciation',
+  general: 'General',
+};
+
 export function EditSlang() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const { user, appUser, isAuthReady } = useAuth();
   const navigate = useNavigate();
+
+  // Suggestion context from URL params
+  const suggestionId = searchParams.get('suggestion_id');
+  const suggestionField = searchParams.get('suggestion_field');
+  const suggestionValue = searchParams.get('suggestion_value');
+  const suggestionUser = searchParams.get('suggestion_user');
 
   const [word, setWord] = useState('');
   const [pronunciation, setPronunciation] = useState('');
@@ -146,7 +161,13 @@ export function EditSlang() {
         .eq('id', id);
 
       if (error) throw error;
-      navigate('/dashboard');
+
+      // Mark suggestion as resolved (rejected = handled) if editing from a suggestion
+      if (suggestionId) {
+        await supabase.from('suggestions').update({ status: 'approved' }).eq('id', suggestionId);
+      }
+
+      navigate(-1);
     } catch (error) {
       console.error('Error updating slang:', error);
       setErrorMsg('Failed to update slang. Please try again.');
@@ -190,6 +211,28 @@ export function EditSlang() {
         </div>
         <h1 className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight">Edit Slang</h1>
       </div>
+
+      {/* Suggestion context banner */}
+      {suggestionValue && (
+        <div className="mb-5 p-4 bg-amber-500/[0.06] border border-amber-500/15 rounded-xl space-y-2">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="w-4 h-4 text-amber-400 shrink-0" />
+            <span className="text-sm font-semibold text-amber-300">User Suggestion</span>
+            {suggestionField && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/15">
+                <Tag className="w-2.5 h-2.5" />
+                {FIELD_LABELS[suggestionField] || suggestionField}
+              </span>
+            )}
+            {suggestionUser && (
+              <span className="text-[11px] text-white/30 ml-auto">by {suggestionUser}</span>
+            )}
+          </div>
+          <div className="bg-white/[0.03] rounded-lg p-3 border border-white/[0.04]">
+            <p className="text-sm text-white/70 whitespace-pre-wrap break-words">{suggestionValue}</p>
+          </div>
+        </div>
+      )}
 
       <AnimatePresence>
         {errorMsg && (

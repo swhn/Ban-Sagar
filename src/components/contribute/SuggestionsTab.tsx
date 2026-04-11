@@ -190,7 +190,15 @@ export function SuggestionsTab() {
                   </span>
 
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <button onClick={() => { handleReject(suggestion.id); navigate(`/edit/${suggestion.slang_id}`); }}
+                    <button onClick={() => {
+                      const params = new URLSearchParams({
+                        suggestion_id: suggestion.id,
+                        suggestion_field: suggestion.field,
+                        suggestion_value: suggestion.value,
+                        suggestion_user: suggestion.user_name || 'Anonymous',
+                      });
+                      navigate(`/edit/${suggestion.slang_id}?${params.toString()}`);
+                    }}
                       className="flex items-center gap-1 px-2.5 py-1.5 bg-indigo-500/10 text-indigo-400 rounded-lg hover:bg-indigo-500/15 text-xs font-semibold transition-all border border-indigo-500/15">
                       <Edit className="w-3.5 h-3.5" /> Edit Word
                     </button>
