@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { PenLine, BookOpen, Trophy, Sparkles, Loader2, ClipboardList } from 'lucide-react';
+import { PenLine, BookOpen, Trophy, Sparkles, Loader2, ClipboardList, MessageSquare } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
 import { ContributorStats } from '../lib/achievements';
@@ -11,8 +11,9 @@ import { HistoryTab } from '../components/contribute/HistoryTab';
 import { LeaderboardTab } from '../components/contribute/LeaderboardTab';
 import { AchievementsTab } from '../components/contribute/AchievementsTab';
 import { ReviewTab } from '../components/contribute/ReviewTab';
+import { SuggestionsTab } from '../components/contribute/SuggestionsTab';
 
-type ContributeTab = 'add' | 'history' | 'leaderboard' | 'achievements' | 'review';
+type ContributeTab = 'add' | 'history' | 'leaderboard' | 'achievements' | 'review' | 'suggestions';
 
 export function Contribute() {
   const { user, appUser, isAuthReady } = useAuth();
@@ -72,7 +73,7 @@ export function Contribute() {
   if (!isAuthReady) return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 text-indigo-500 animate-spin" /></div>;
 
   // Build tab list dynamically based on role
-  const tabs: { key: ContributeTab; label: string; shortLabel: string; icon: React.ElementType }[] = [
+  const tabs: { key: ContributeTab; label: string; shortLabel: string; icon: React.ElementType; modOnly?: boolean }[] = [
     { key: 'add', label: 'Add Word', shortLabel: 'Add', icon: PenLine },
     { key: 'history', label: 'My Words', shortLabel: 'Words', icon: BookOpen },
     { key: 'leaderboard', label: 'Rankings', shortLabel: 'Ranks', icon: Trophy },
@@ -80,7 +81,8 @@ export function Contribute() {
   ];
 
   if (isMod) {
-    tabs.push({ key: 'review', label: 'Review', shortLabel: 'Review', icon: ClipboardList });
+    tabs.push({ key: 'review', label: 'Review', shortLabel: 'Review', icon: ClipboardList, modOnly: true });
+    tabs.push({ key: 'suggestions', label: 'Suggestions', shortLabel: 'Suggest', icon: MessageSquare, modOnly: true });
   }
 
   return (
@@ -96,14 +98,16 @@ export function Contribute() {
 
       {/* Tabs */}
       <div className="flex gap-1 overflow-x-auto no-scrollbar bg-white/[0.02] p-1 rounded-xl border border-white/[0.04]">
-        {tabs.map(({ key, label, shortLabel, icon: Icon }) => (
+        {tabs.map(({ key, label, shortLabel, icon: Icon, modOnly }) => (
           <button
             key={key}
             onClick={() => { setActiveTab(key); setSelectedUser(null); }}
             className={cn(
-              "flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap",
+              "shrink-0 flex items-center justify-center gap-1.5 px-3 sm:px-3 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap",
+              !modOnly && "flex-1",
               activeTab === key ? 'bg-white/[0.07] text-white' : 'text-white/35 hover:text-white/60',
-              (key === 'review' || key === 'users') && activeTab === key && 'text-amber-300 bg-amber-500/10'
+              modOnly && activeTab === key && 'text-amber-300 bg-amber-500/10',
+              modOnly && activeTab !== key && 'text-amber-400/40 hover:text-amber-300/70'
             )}
           >
             <Icon className="w-4 h-4" />
@@ -134,6 +138,7 @@ export function Contribute() {
         />
       )}
       {activeTab === 'review' && isMod && <ReviewTab />}
+      {activeTab === 'suggestions' && isMod && <SuggestionsTab />}
     </motion.div>
   );
 }

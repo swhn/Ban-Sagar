@@ -1,12 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { generateSlug } from '../lib/utils';
 import { generateSlangDetails } from '../lib/gemini';
-import { Plus, X, Loader2, BookOpen, CheckCircle, AlertCircle, AlertTriangle, Sparkles, Timer } from 'lucide-react';
+import { Plus, X, Loader2, BookOpen, CheckCircle, AlertCircle, AlertTriangle, Sparkles, Timer, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+
+interface SimilarWord {
+  id: string;
+  word: string;
+  slug: string;
+  meaning: string;
+  status: string;
+}
 
 export function AddSlang() {
   const { user, appUser, isAuthReady } = useAuth();
@@ -21,6 +29,37 @@ export function AddSlang() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [similarWords, setSimilarWords] = useState<SimilarWord[]>([]);
+  const [dismissedWarning, setDismissedWarning] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounced duplicate check as user types
+  useEffect(() => {
+    const trimmed = word.trim();
+    if (trimmed.length < 1) {
+      setSimilarWords([]);
+      setDismissedWarning(false);
+      return;
+    }
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const { data } = await supabase
+          .from('slangs')
+          .select('id, word, slug, meaning, status')
+          .ilike('word', `%${trimmed}%`)
+          .limit(5);
+
+        setSimilarWords((data as SimilarWord[]) || []);
+        setDismissedWarning(false);
+      } catch {
+        setSimilarWords([]);
+      }
+    }, 400);
+
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [word]);
 
   const isAdmin = appUser?.role === 'admin';
   const isAutoApprove = appUser?.role === 'moderator' || appUser?.role === 'admin';
@@ -78,17 +117,6 @@ export function AddSlang() {
     setIsSubmitting(true);
 
     try {
-      const { data: existing } = await supabase
-        .from('slangs')
-        .select('id')
-        .ilike('word', word.trim());
-
-      if (existing && existing.length > 0) {
-        setErrorMsg('This slang word already exists in the dictionary.');
-        setIsSubmitting(false);
-        return;
-      }
-
       const validExamples = examples.filter(ex => ex.trim() !== '');
       const slug = generateSlug(word.trim(), pronunciation.trim() || null);
 
@@ -233,6 +261,48 @@ export function AddSlang() {
               </button>
             )}
           </div>
+
+          {/* Did you mean? warning */}
+          <AnimatePresence>
+            {similarWords.length > 0 && !dismissedWarning && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-2.5 p-3.5 bg-amber-500/10 border border-amber-500/15 rounded-xl"
+              >
+                <div className="flex items-start gap-2.5">
+                  <Search className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-amber-300 mb-2">Did you mean one of these?</p>
+                    <div className="space-y-1.5">
+                      {similarWords.map(sw => (
+                        <Link
+                          key={sw.id}
+                          to={`/slang/${sw.slug || sw.id}`}
+                          className="flex items-center gap-2 p-2 bg-white/[0.03] rounded-lg hover:bg-white/[0.06] transition-colors group"
+                        >
+                          <span className="font-display font-bold text-white text-sm group-hover:text-indigo-300 transition-colors">{sw.word}</span>
+                          <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider",
+                            sw.status === 'approved' ? "bg-emerald-500/10 text-emerald-400" :
+                            sw.status === 'pending' ? "bg-amber-500/10 text-amber-400" : "bg-red-500/10 text-red-400"
+                          )}>{sw.status}</span>
+                          <span className="text-xs text-white/30 line-clamp-1 flex-1 min-w-0">{sw.meaning}</span>
+                        </Link>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setDismissedWarning(true)}
+                      className="mt-2.5 text-xs text-amber-400/60 hover:text-amber-300 font-semibold transition-colors"
+                    >
+                      Not a duplicate — continue adding
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* AI generating overlay indicator */}
