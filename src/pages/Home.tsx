@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { Link } from 'react-router-dom';
 import { SlangData } from '../lib/database.types';
-import { Search, TrendingUp, Clock, ThumbsUp, Shuffle, Sparkles, BookOpen, ArrowRight, Eye, AlertTriangle, PenLine } from 'lucide-react';
+import { Search, TrendingUp, Clock, ThumbsUp, Shuffle, Sparkles, BookOpen, ArrowRight, Eye, AlertTriangle, PenLine, Bell, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GradientBackground } from '../components/GradientBackground';
 import { LoadingGrid } from '../components/LoadingSkeleton';
@@ -40,6 +40,8 @@ export function Home() {
   const [trendingPeriod, setTrendingPeriod] = useState<TrendingPeriod>('day');
   const [randomSeed, setRandomSeed] = useState(0);
   const searchRef = useRef<HTMLDivElement>(null);
+  const [announcement, setAnnouncement] = useState('');
+  const [announcementDismissed, setAnnouncementDismissed] = useState(false);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -49,6 +51,17 @@ export function Home() {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'site_announcement')
+      .single()
+      .then(({ data }) => {
+        if (data?.value) setAnnouncement(data.value);
+      });
   }, []);
 
   useEffect(() => {
@@ -128,6 +141,27 @@ export function Home() {
 
   return (
     <div className="space-y-8 sm:space-y-10">
+      {/* Announcement Banner */}
+      <AnimatePresence>
+        {announcement && !announcementDismissed && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="relative flex items-start gap-3 p-4 bg-indigo-500/[0.08] border border-indigo-500/15 rounded-2xl"
+          >
+            <Bell className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
+            <p className="text-sm text-indigo-200/80 flex-1">{announcement}</p>
+            <button
+              onClick={() => setAnnouncementDismissed(true)}
+              className="text-white/20 hover:text-white/50 transition-colors shrink-0"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Hero */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}

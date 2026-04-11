@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import {
   Loader2, CheckCircle, AlertCircle, Save, Shield, Eye, EyeOff,
-  MessageSquare, UserPlus, Globe, Bell
+  MessageSquare, UserPlus, Globe, Bell, Trophy
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
@@ -12,6 +12,7 @@ interface SiteSettings {
   require_approval: boolean;
   allow_nsfw: boolean;
   allow_suggestions: boolean;
+  show_ranking: boolean;
   site_announcement: string;
   max_submissions_per_day: number;
 }
@@ -21,6 +22,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
   require_approval: true,
   allow_nsfw: true,
   allow_suggestions: true,
+  show_ranking: true,
   site_announcement: '',
   max_submissions_per_day: 20,
 };
@@ -171,6 +173,14 @@ export function SiteSettingsTab() {
           description="Allow users to suggest improvements on approved slangs"
           value={settings.allow_suggestions}
           onChange={(v) => updateSetting('allow_suggestions', v)}
+        />
+
+        <ToggleSetting
+          icon={<Trophy className="w-4 h-4" />}
+          label="Show Rankings"
+          description="Show the rankings/leaderboard tab on the Contribute page"
+          value={settings.show_ranking}
+          onChange={(v) => updateSetting('show_ranking', v)}
         />
       </div>
 

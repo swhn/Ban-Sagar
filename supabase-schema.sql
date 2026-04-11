@@ -76,6 +76,7 @@ INSERT INTO site_settings (key, value) VALUES
   ('require_approval', 'true'),
   ('allow_nsfw', 'true'),
   ('allow_suggestions', 'true'),
+  ('show_ranking', 'true'),
   ('site_announcement', ''),
   ('max_submissions_per_day', '20')
 ON CONFLICT (key) DO NOTHING;

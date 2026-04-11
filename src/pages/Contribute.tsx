@@ -21,8 +21,20 @@ export function Contribute() {
   const [contributors, setContributors] = useState<ContributorStats[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedUser, setSelectedUser] = useState<ContributorStats | null>(null);
+  const [showRanking, setShowRanking] = useState(true);
 
   const isMod = appUser?.role === 'moderator' || appUser?.role === 'admin';
+
+  useEffect(() => {
+    supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'show_ranking')
+      .single()
+      .then(({ data }) => {
+        if (data) setShowRanking(data.value === 'true');
+      });
+  }, []);
 
   useEffect(() => {
     if (activeTab === 'leaderboard' || activeTab === 'achievements' || activeTab === 'add') {
@@ -72,13 +84,17 @@ export function Contribute() {
 
   if (!isAuthReady) return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 text-indigo-500 animate-spin" /></div>;
 
-  // Build tab list dynamically based on role
+  // Build tab list dynamically based on role and settings
   const tabs: { key: ContributeTab; label: string; shortLabel: string; icon: React.ElementType; modOnly?: boolean }[] = [
     { key: 'add', label: 'Add Word', shortLabel: 'Add', icon: PenLine },
     { key: 'history', label: 'My Words', shortLabel: 'Words', icon: BookOpen },
-    { key: 'leaderboard', label: 'Rankings', shortLabel: 'Ranks', icon: Trophy },
-    { key: 'achievements', label: 'Badges', shortLabel: 'Badges', icon: Sparkles },
   ];
+
+  if (showRanking || isMod) {
+    tabs.push({ key: 'leaderboard', label: 'Rankings', shortLabel: 'Ranks', icon: Trophy });
+  }
+
+  tabs.push({ key: 'achievements', label: 'Badges', shortLabel: 'Badges', icon: Sparkles });
 
   if (isMod) {
     tabs.push({ key: 'review', label: 'Review', shortLabel: 'Review', icon: ClipboardList, modOnly: true });
