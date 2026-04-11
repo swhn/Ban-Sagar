@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { Suggestion, SlangData } from '../../lib/database.types';
+import { Suggestion } from '../../lib/database.types';
 import {
   Loader2, CheckCircle, XCircle, Clock, Search, ExternalLink,
-  MessageSquare, Tag
+  MessageSquare, Tag, Edit
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
 
-type SuggestionWithSlang = Suggestion & { slang_word?: string; slang_slug?: string };
+type SuggestionWithSlang = Suggestion & { slang_word?: string; slang_slug?: string; slang_id: string };
 type FilterStatus = 'pending' | 'approved' | 'rejected';
 
 const FIELD_LABELS: Record<string, string> = {
@@ -21,6 +21,7 @@ const FIELD_LABELS: Record<string, string> = {
 };
 
 export function SuggestionsTab() {
+  const navigate = useNavigate();
   const [suggestions, setSuggestions] = useState<SuggestionWithSlang[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<FilterStatus>('pending');
@@ -84,20 +85,9 @@ export function SuggestionsTab() {
     setTimeout(() => setMessage(null), 3000);
   };
 
-  const handleApprove = async (id: string) => {
-    const { error } = await supabase.from('suggestions').update({ status: 'approved' }).eq('id', id);
-    showMessage(error ? 'Failed to approve.' : 'Suggestion approved.', error ? 'error' : 'success');
-  };
-
   const handleReject = async (id: string) => {
     const { error } = await supabase.from('suggestions').update({ status: 'rejected' }).eq('id', id);
     showMessage(error ? 'Failed to reject.' : 'Suggestion rejected.', error ? 'error' : 'success');
-  };
-
-  const handleDelete = async (id: string) => {
-    const { error } = await supabase.from('suggestions').delete().eq('id', id);
-    if (!error) setSuggestions(prev => prev.filter(s => s.id !== id));
-    showMessage(error ? 'Failed to delete.' : 'Deleted.', error ? 'error' : 'success');
   };
 
   const filtered = suggestions.filter(s =>
@@ -172,7 +162,7 @@ export function SuggestionsTab() {
                 transition={{ delay: i * 0.02 }}
                 className="p-4 bg-surface-raised/80 rounded-xl border border-white/[0.04] hover:border-white/[0.07] transition-colors space-y-3"
               >
-                {/* Header: slang word + field + time */}
+                {/* Header: word + topic + time */}
                 <div className="flex flex-wrap items-center gap-2">
                   <Link
                     to={`/slang/${suggestion.slang_slug || suggestion.slang_id}`}
@@ -188,7 +178,7 @@ export function SuggestionsTab() {
                   <span className="text-[11px] text-white/20 ml-auto">{timeAgo(suggestion.created_at)}</span>
                 </div>
 
-                {/* Suggestion value */}
+                {/* Description */}
                 <div className="bg-white/[0.02] rounded-lg p-3 border border-white/[0.04]">
                   <p className="text-sm text-white/70 whitespace-pre-wrap break-words">{suggestion.value}</p>
                 </div>
@@ -200,22 +190,16 @@ export function SuggestionsTab() {
                   </span>
 
                   <div className="flex items-center gap-1.5 shrink-0">
-                    {suggestion.status !== 'approved' && (
-                      <button onClick={() => handleApprove(suggestion.id)}
-                        className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/15 text-xs font-semibold transition-all border border-emerald-500/15">
-                        <CheckCircle className="w-3.5 h-3.5" /> Approve
-                      </button>
-                    )}
+                    <button onClick={() => { handleReject(suggestion.id); navigate(`/edit/${suggestion.slang_id}`); }}
+                      className="flex items-center gap-1 px-2.5 py-1.5 bg-indigo-500/10 text-indigo-400 rounded-lg hover:bg-indigo-500/15 text-xs font-semibold transition-all border border-indigo-500/15">
+                      <Edit className="w-3.5 h-3.5" /> Edit Word
+                    </button>
                     {suggestion.status !== 'rejected' && (
                       <button onClick={() => handleReject(suggestion.id)}
                         className="flex items-center gap-1 px-2.5 py-1.5 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/15 text-xs font-semibold transition-all border border-red-500/15">
                         <XCircle className="w-3.5 h-3.5" /> Reject
                       </button>
                     )}
-                    <button onClick={() => handleDelete(suggestion.id)}
-                      className="flex items-center gap-1 px-2.5 py-1.5 bg-white/[0.03] border border-white/[0.06] text-white/40 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/15 rounded-lg text-xs font-semibold transition-all">
-                      <XCircle className="w-3.5 h-3.5" /> Delete
-                    </button>
                   </div>
                 </div>
               </motion.div>
