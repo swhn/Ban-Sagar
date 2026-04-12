@@ -142,7 +142,7 @@ export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, on
         <div className="flex justify-between items-start gap-3 mb-5">
           <div className="min-w-0">
             <div className="flex items-center gap-2.5">
-              <h3 className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight">
+              <h3 className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight font-burmese">
                 {slang.word}
               </h3>
               {slang.is_nsfw && (
@@ -210,7 +210,7 @@ export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, on
             {slang.meaning_burmese && (
               <div className="bg-indigo-500/[0.03] rounded-xl p-4 border border-indigo-500/[0.06]">
                 <h4 className="text-[10px] font-bold uppercase tracking-wider text-indigo-400/60 mb-1.5">Burmese</h4>
-                <p className="text-white/85 text-[15px] leading-relaxed">{slang.meaning_burmese}</p>
+                <p className="text-white/85 text-[15px] leading-relaxed font-burmese">{slang.meaning_burmese}</p>
               </div>
             )}
 

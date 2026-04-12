@@ -352,7 +352,7 @@ export function Home() {
                   slang.is_nsfw && !appUser?.show_nsfw && "blur-sm"
                 )}>
                   <h2 className={cn(
-                    "text-xl sm:text-2xl lg:text-3xl font-display font-bold transition-colors leading-tight",
+                    "text-xl sm:text-2xl lg:text-3xl font-display font-bold transition-colors leading-tight font-burmese",
                     slang.is_nsfw ? "text-white group-hover:text-red-300" : "text-white group-hover:text-indigo-300"
                   )}>
                     {slang.word}

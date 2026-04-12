@@ -1,9 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap');
 @import "tailwindcss";
 
+@font-face {
+  font-family: "NamKhoneWebPro";
+  src: url("/fonts/NamKhoneWebPro.woff2") format("woff2"),
+       url("/fonts/NamKhoneWebPro.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-burmese: "NamKhoneWebPro", "Padauk", "Myanmar Text", "Noto Sans Myanmar", sans-serif;
   --color-surface: #06060b;
   --color-surface-raised: #0e0e16;
   --color-surface-overlay: #161622;

@@ -240,7 +240,7 @@ export function AddSlang() {
           <div className={cn("flex gap-2", !isAdmin && "flex-col")}>
             <input
               type="text" id="word" required maxLength={100}
-              className="flex-1 px-4 py-3 bg-surface/80 border border-white/[0.06] rounded-xl focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500/30 outline-none transition-all text-base font-medium text-white placeholder-white/20"
+              className="flex-1 px-4 py-3 bg-surface/80 border border-white/[0.06] rounded-xl focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500/30 outline-none transition-all text-base font-medium text-white placeholder-white/20 font-burmese"
               placeholder="e.g., ကြွေ"
               value={word}
               onChange={(e) => setWord(e.target.value)}
@@ -356,7 +356,7 @@ export function AddSlang() {
           </label>
           <textarea
             id="meaningBurmese" required maxLength={1000} rows={3}
-            className="w-full px-4 py-3 bg-surface/80 border border-white/[0.06] rounded-xl focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500/30 outline-none transition-all resize-none text-sm text-white placeholder-white/20"
+            className="w-full px-4 py-3 bg-surface/80 border border-white/[0.06] rounded-xl focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500/30 outline-none transition-all resize-none text-sm text-white placeholder-white/20 font-burmese"
             placeholder="မြန်မာလို အဓိပ္ပါယ် ရှင်းပြပါ..."
             value={meaningBurmese}
             onChange={(e) => setMeaningBurmese(e.target.value)}

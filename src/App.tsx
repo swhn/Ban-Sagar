@@ -9,6 +9,9 @@ import { SlangDetail } from './pages/SlangDetail';
 import { EditSlang } from './pages/EditSlang';
 import { Contribute } from './pages/Contribute';
 import { Profile } from './pages/Profile';
+import { About } from './pages/About';
+import { Contact } from './pages/Contact';
+import { Privacy } from './pages/Privacy';
 
 export default function App() {
   return (
@@ -22,6 +25,9 @@ export default function App() {
             <Route path="profile" element={<Profile />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="leaderboard" element={<Navigate to="/contribute" replace />} />
+            <Route path="about" element={<About />} />
+            <Route path="contact" element={<Contact />} />
+            <Route path="privacy" element={<Privacy />} />
             <Route path="slang/:slug" element={<SlangDetail />} />
             <Route path="edit/:id" element={<EditSlang />} />
           </Route>

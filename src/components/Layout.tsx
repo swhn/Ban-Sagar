@@ -205,12 +205,19 @@ export function Layout() {
 
       {/* Footer */}
       <footer className="border-t border-white/[0.04] py-6 mt-auto">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-white/20">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-500/40" />
-            <span className="text-xs font-medium">Ban Sagar - Myanmar Slang Dictionary</span>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-white/20">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-500/40" />
+              <span className="text-xs font-medium">Ban Sagar - Myanmar Slang Dictionary</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <Link to="/about" className="text-xs text-white/20 hover:text-white/50 transition-colors font-medium">About</Link>
+              <Link to="/contact" className="text-xs text-white/20 hover:text-white/50 transition-colors font-medium">Contact</Link>
+              <Link to="/privacy" className="text-xs text-white/20 hover:text-white/50 transition-colors font-medium">Privacy</Link>
+            </div>
           </div>
-          <p className="text-xs text-white/15">
+          <p className="text-xs text-white/15 text-center sm:text-left">
             &copy; {new Date().getFullYear()} Community Driven.
           </p>
         </div>
