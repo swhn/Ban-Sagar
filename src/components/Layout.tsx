@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { BookOpen, LogIn, LogOut, PlusCircle, Sparkles, Home, Menu, X, Users, Settings, ShieldAlert } from 'lucide-react';
+import { BookOpen, LogIn, LogOut, PlusCircle, Sparkles, Home, Menu, X, Users, Settings, ShieldAlert, Sun, Moon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import { useTheme } from '../lib/useTheme';
 
 export function Layout() {
   const { user, appUser, login, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -73,6 +75,14 @@ export function Layout() {
                 <ShieldAlert className="w-4 h-4" /> Admin
               </Link>
             )}
+
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg text-white/40 hover:text-white/80 hover:bg-white/[0.03] transition-all active:scale-90"
+              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
 
             <div className="h-6 w-px bg-white/[0.06] mx-2" />
 
@@ -148,6 +158,14 @@ export function Layout() {
                     <ShieldAlert className="w-5 h-5" /> Admin Dashboard
                   </Link>
                 )}
+
+                <button
+                  onClick={toggleTheme}
+                  className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all text-white/60 hover:bg-white/[0.03] w-full text-left"
+                >
+                  {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                  {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                </button>
 
                 <div className="h-px bg-white/[0.06] my-2" />
 

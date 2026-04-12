@@ -1,9 +1,13 @@
 <!doctype html>
-<html lang="my">
+<html lang="my" class="dark">
   <head>
+    <script>
+      (function(){var t=localStorage.getItem('theme');if(t)document.documentElement.className=t;else if(window.matchMedia('(prefers-color-scheme:light)').matches)document.documentElement.className='light'})()
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0a0a0f" />
+    <meta name="theme-color" content="#0a0a0f" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f8f9fc" media="(prefers-color-scheme: light)" />
 
     <!-- Primary Meta Tags -->
     <title>Ban Sagar - Myanmar Slang Dictionary</title>

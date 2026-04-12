@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { SiteSettingsProvider } from './lib/useSiteSettings';
+import { ThemeProvider } from './lib/useTheme';
 import { Layout } from './components/Layout';
 import { Loader2 } from 'lucide-react';
 
@@ -27,9 +28,10 @@ function PageLoader() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <SiteSettingsProvider>
-        <BrowserRouter>
+    <ThemeProvider>
+      <AuthProvider>
+        <SiteSettingsProvider>
+          <BrowserRouter>
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Layout />}>
@@ -47,8 +49,9 @@ export default function App() {
               </Route>
             </Routes>
           </Suspense>
-        </BrowserRouter>
-      </SiteSettingsProvider>
-    </AuthProvider>
+          </BrowserRouter>
+        </SiteSettingsProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

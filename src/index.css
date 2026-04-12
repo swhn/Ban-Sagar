@@ -14,14 +14,14 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-burmese: "NamKhoneWebPro", "Padauk", "Myanmar Text", "Noto Sans Myanmar", sans-serif;
-  --color-surface: #06060b;
-  --color-surface-raised: #0e0e16;
-  --color-surface-overlay: #161622;
-  --color-surface-card: #111119;
-  --color-border: rgba(255, 255, 255, 0.06);
-  --color-border-hover: rgba(255, 255, 255, 0.12);
-  --color-text-primary: #f0f0f5;
-  --color-text-secondary: #7a7a94;
+  --color-surface: var(--theme-surface);
+  --color-surface-raised: var(--theme-surface-raised);
+  --color-surface-overlay: var(--theme-surface-overlay);
+  --color-surface-card: var(--theme-surface-card);
+  --color-border: var(--theme-border);
+  --color-border-hover: var(--theme-border-hover);
+  --color-text-primary: var(--theme-text-primary);
+  --color-text-secondary: var(--theme-text-secondary);
   --color-accent: #6366f1;
   --color-accent-glow: #818cf8;
   --color-success: #34d399;
@@ -29,10 +29,52 @@
   --color-danger: #f87171;
 }
 
+/* Dark theme (default) */
+:root, .dark {
+  --theme-surface: #06060b;
+  --theme-surface-raised: #0e0e16;
+  --theme-surface-overlay: #161622;
+  --theme-surface-card: #111119;
+  --theme-border: rgba(255, 255, 255, 0.06);
+  --theme-border-hover: rgba(255, 255, 255, 0.12);
+  --theme-text-primary: #f0f0f5;
+  --theme-text-secondary: #7a7a94;
+  --theme-text-muted: rgba(255, 255, 255, 0.5);
+  --theme-text-faint: rgba(255, 255, 255, 0.25);
+  --theme-glass: rgba(255, 255, 255, 0.03);
+  --theme-glass-hover: rgba(255, 255, 255, 0.06);
+  color-scheme: dark;
+}
+
+/* Light theme */
+.light {
+  --theme-surface: #f8f9fc;
+  --theme-surface-raised: #ffffff;
+  --theme-surface-overlay: #f0f1f5;
+  --theme-surface-card: #ffffff;
+  --theme-border: rgba(0, 0, 0, 0.08);
+  --theme-border-hover: rgba(0, 0, 0, 0.15);
+  --theme-text-primary: #111827;
+  --theme-text-secondary: #6b7280;
+  --theme-text-muted: rgba(0, 0, 0, 0.5);
+  --theme-text-faint: rgba(0, 0, 0, 0.25);
+  --theme-glass: rgba(0, 0, 0, 0.03);
+  --theme-glass-hover: rgba(0, 0, 0, 0.06);
+  color-scheme: light;
+}
+
 body {
-  @apply bg-surface text-text-primary antialiased selection:bg-indigo-500/30 selection:text-white;
+  @apply bg-surface text-text-primary antialiased;
   -webkit-tap-highlight-color: transparent;
   overflow-x: hidden;
+}
+
+/* Selection */
+::selection {
+  background: rgba(99, 102, 241, 0.3);
+}
+.dark ::selection {
+  color: white;
 }
 
 /* Smooth scrolling */
@@ -47,12 +89,19 @@ html {
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-::-webkit-scrollbar-thumb {
+.dark ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 4px;
 }
-::-webkit-scrollbar-thumb:hover {
+.dark ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.15);
+}
+.light ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+}
+.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
 }
 
 /* Animations */
@@ -88,14 +137,72 @@ html {
   border-radius: 8px;
 }
 
-/* Input autofill dark theme */
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-textarea:-webkit-autofill {
+/* Input autofill */
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
+.dark textarea:-webkit-autofill {
   -webkit-box-shadow: 0 0 0px 1000px #0e0e16 inset;
   -webkit-text-fill-color: #f0f0f5;
   caret-color: #f0f0f5;
+}
+.light input:-webkit-autofill,
+.light input:-webkit-autofill:hover,
+.light input:-webkit-autofill:focus,
+.light textarea:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset;
+  -webkit-text-fill-color: #111827;
+  caret-color: #111827;
+}
+
+/* Light mode overrides for white/opacity patterns used everywhere */
+.light {
+  /* Override common white-based opacity patterns to use dark equivalents */
+  & .text-white { color: var(--theme-text-primary); }
+  & .text-white\/90 { color: rgba(17, 24, 39, 0.9); }
+  & .text-white\/80 { color: rgba(17, 24, 39, 0.8); }
+  & .text-white\/70 { color: rgba(17, 24, 39, 0.7); }
+  & .text-white\/60 { color: rgba(17, 24, 39, 0.6); }
+  & .text-white\/50 { color: rgba(17, 24, 39, 0.5); }
+  & .text-white\/40 { color: rgba(17, 24, 39, 0.4); }
+  & .text-white\/35 { color: rgba(17, 24, 39, 0.35); }
+  & .text-white\/30 { color: rgba(17, 24, 39, 0.3); }
+  & .text-white\/25 { color: rgba(17, 24, 39, 0.25); }
+  & .text-white\/20 { color: rgba(17, 24, 39, 0.2); }
+  & .text-white\/15 { color: rgba(17, 24, 39, 0.15); }
+
+  & .bg-white\/\[0\.02\] { background-color: rgba(0, 0, 0, 0.02); }
+  & .bg-white\/\[0\.03\] { background-color: rgba(0, 0, 0, 0.03); }
+  & .bg-white\/\[0\.04\] { background-color: rgba(0, 0, 0, 0.04); }
+  & .bg-white\/5, & .bg-white\/\[0\.05\] { background-color: rgba(0, 0, 0, 0.05); }
+  & .bg-white\/10 { background-color: rgba(0, 0, 0, 0.08); }
+
+  & .border-white\/\[0\.04\] { border-color: rgba(0, 0, 0, 0.06); }
+  & .border-white\/\[0\.06\] { border-color: rgba(0, 0, 0, 0.08); }
+  & .border-white\/\[0\.08\] { border-color: rgba(0, 0, 0, 0.1); }
+  & .border-white\/10 { border-color: rgba(0, 0, 0, 0.1); }
+
+  & .ring-white\/10 { --tw-ring-color: rgba(0, 0, 0, 0.1); }
+
+  & .hover\:text-white:hover { color: var(--theme-text-primary); }
+  & .hover\:text-white\/80:hover { color: rgba(17, 24, 39, 0.8); }
+  & .hover\:text-white\/50:hover { color: rgba(17, 24, 39, 0.5); }
+  & .hover\:bg-white\/\[0\.03\]:hover { background-color: rgba(0, 0, 0, 0.03); }
+  & .hover\:bg-white\/\[0\.04\]:hover { background-color: rgba(0, 0, 0, 0.04); }
+  & .hover\:bg-white\/5:hover { background-color: rgba(0, 0, 0, 0.05); }
+
+  & .bg-black\/60 { background-color: rgba(0, 0, 0, 0.3); }
+
+  & .shadow-black\/40 { --tw-shadow-color: rgba(0, 0, 0, 0.1); }
+
+  & .placeholder-white\/20::placeholder { color: rgba(17, 24, 39, 0.25); }
+
+  /* Header/footer glass effect */
+  & .bg-surface\/80 { background-color: rgba(248, 249, 252, 0.85); }
+  & .bg-surface\/90 { background-color: rgba(248, 249, 252, 0.92); }
+  & .bg-surface-raised\/80 { background-color: rgba(255, 255, 255, 0.9); }
+  & .bg-surface-raised\/95 { background-color: rgba(255, 255, 255, 0.97); }
+  & .bg-surface-raised\/50 { background-color: rgba(255, 255, 255, 0.6); }
 }
 
 /* Bottom nav safe area */
