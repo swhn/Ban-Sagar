@@ -29,7 +29,7 @@ export function useMeta({ title, description, url, image }: MetaOptions) {
     const fullTitle = title ? `${title} | Ban Sagar` : DEFAULT_TITLE;
     const desc = description || DEFAULT_DESCRIPTION;
     const pageUrl = url ? `${BASE_URL}${url}` : BASE_URL;
-    const ogImage = image || `${BASE_URL}/og-image.svg`;
+    const ogImage = image || `${BASE_URL}/og-image.png`;
 
     document.title = fullTitle;
 
