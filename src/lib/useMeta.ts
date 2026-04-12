@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 const BASE_URL = 'https://bansagar.madebysai.com';
-const DEFAULT_TITLE = 'Ban Sagar - ဗန်းစကား | Myanmar Slang Dictionary';
+const DEFAULT_TITLE = 'Ban Sagar - Myanmar Slang Dictionary';
 const DEFAULT_DESCRIPTION =
   "Myanmar's community-driven slang dictionary. Discover, learn, and contribute to the largest collection of Burmese street language and colloquial expressions.";
 
