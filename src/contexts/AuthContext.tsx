@@ -53,6 +53,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (existingUser) {
         setAppUser(existingUser as AppUser);
       } else {
+        // Check if new registrations are allowed
+        const { data: regSetting } = await supabase
+          .from('site_settings')
+          .select('value')
+          .eq('key', 'allow_registrations')
+          .single();
+
+        if (regSetting?.value === 'false') {
+          await supabase.auth.signOut();
+          setUser(null);
+          setAppUser(null);
+          alert('New registrations are currently disabled. Please try again later.');
+          return;
+        }
+
         const newUser = {
           id: authUser.id,
           email: authUser.email || '',

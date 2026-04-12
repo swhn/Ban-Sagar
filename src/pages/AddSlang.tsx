@@ -7,6 +7,7 @@ import { generateSlangDetails } from '../lib/gemini';
 import { Plus, X, Loader2, BookOpen, CheckCircle, AlertCircle, AlertTriangle, Sparkles, Timer, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import { useSiteSettings } from '../lib/useSiteSettings';
 
 interface SimilarWord {
   id: string;
@@ -18,6 +19,7 @@ interface SimilarWord {
 
 export function AddSlang() {
   const { user, appUser, isAuthReady } = useAuth();
+  const siteSettings = useSiteSettings();
   const navigate = useNavigate();
 
   const [word, setWord] = useState('');
@@ -62,7 +64,9 @@ export function AddSlang() {
   }, [word]);
 
   const isAdmin = appUser?.role === 'admin';
-  const isAutoApprove = appUser?.role === 'moderator' || appUser?.role === 'admin';
+  const isMod = appUser?.role === 'moderator' || appUser?.role === 'admin';
+  // Auto-approve if: user is mod/admin, OR approval is not required globally
+  const isAutoApprove = isMod || !siteSettings.require_approval;
 
   const handleAddExample = () => {
     if (examples.length < 5) setExamples([...examples, '']);
@@ -117,6 +121,23 @@ export function AddSlang() {
     setIsSubmitting(true);
 
     try {
+      // Check daily submission limit (skip for mods/admins)
+      if (!isMod && siteSettings.max_submissions_per_day > 0) {
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const { count } = await supabase
+          .from('slangs')
+          .select('id', { count: 'exact', head: true })
+          .eq('author_id', user.id)
+          .gte('created_at', todayStart.toISOString());
+
+        if ((count || 0) >= siteSettings.max_submissions_per_day) {
+          setErrorMsg(`You've reached the daily limit of ${siteSettings.max_submissions_per_day} submissions. Try again tomorrow.`);
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       const validExamples = examples.filter(ex => ex.trim() !== '');
       const slug = generateSlug(word.trim(), pronunciation.trim() || null);
 
@@ -363,8 +384,8 @@ export function AddSlang() {
           />
         </div>
 
-        {/* NSFW Toggle */}
-        <div>
+        {/* NSFW Toggle - hidden when NSFW is globally disabled */}
+        {siteSettings.allow_nsfw && <div>
           <button
             type="button"
             onClick={() => setIsNsfw(!isNsfw)}
@@ -394,7 +415,7 @@ export function AddSlang() {
               <p className="text-[11px] text-white/30 mt-0.5">Mark if this slang contains explicit or sensitive content</p>
             </div>
           </button>
-        </div>
+        </div>}
 
         {/* Examples */}
         <div>

@@ -5,6 +5,7 @@ import { PenLine, BookOpen, Trophy, Sparkles, Loader2, ClipboardList, MessageSqu
 import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
 import { ContributorStats } from '../lib/achievements';
+import { useSiteSettings } from '../lib/useSiteSettings';
 
 import { AddWordTab } from '../components/contribute/AddWordTab';
 import { HistoryTab } from '../components/contribute/HistoryTab';
@@ -21,20 +22,10 @@ export function Contribute() {
   const [contributors, setContributors] = useState<ContributorStats[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedUser, setSelectedUser] = useState<ContributorStats | null>(null);
-  const [showRanking, setShowRanking] = useState(true);
+  const siteSettings = useSiteSettings();
 
   const isMod = appUser?.role === 'moderator' || appUser?.role === 'admin';
-
-  useEffect(() => {
-    supabase
-      .from('site_settings')
-      .select('value')
-      .eq('key', 'show_ranking')
-      .single()
-      .then(({ data }) => {
-        if (data) setShowRanking(data.value === 'true');
-      });
-  }, []);
+  const showRanking = siteSettings.show_ranking;
 
   useEffect(() => {
     if (activeTab === 'leaderboard' || activeTab === 'achievements' || activeTab === 'add') {

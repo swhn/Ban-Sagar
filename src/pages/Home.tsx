@@ -9,6 +9,7 @@ import { LoadingGrid } from '../components/LoadingSkeleton';
 import { useAuth } from '../contexts/AuthContext';
 import { cn } from '../lib/utils';
 import { useMeta } from '../lib/useMeta';
+import { useSiteSettings } from '../lib/useSiteSettings';
 
 type SortTab = 'trending' | 'latest' | 'most_upvote' | 'random';
 type TrendingPeriod = 'day' | 'week' | 'month' | 'year';
@@ -34,6 +35,7 @@ const getTrendingScore = (slang: SlangData, period: TrendingPeriod) => {
 export function Home() {
   useMeta({ url: '/' });
   const { appUser } = useAuth();
+  const siteSettings = useSiteSettings();
   const [slangs, setSlangs] = useState<SlangData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -42,8 +44,9 @@ export function Home() {
   const [trendingPeriod, setTrendingPeriod] = useState<TrendingPeriod>('day');
   const [randomSeed, setRandomSeed] = useState(0);
   const searchRef = useRef<HTMLDivElement>(null);
-  const [announcement, setAnnouncement] = useState('');
   const [announcementDismissed, setAnnouncementDismissed] = useState(false);
+
+  const announcement = siteSettings.site_announcement;
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -53,17 +56,6 @@ export function Home() {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    supabase
-      .from('site_settings')
-      .select('value')
-      .eq('key', 'site_announcement')
-      .single()
-      .then(({ data }) => {
-        if (data?.value) setAnnouncement(data.value);
-      });
   }, []);
 
   useEffect(() => {

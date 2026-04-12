@@ -6,6 +6,7 @@ import { cn } from '../lib/utils';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { SlangData, VoteType } from '../lib/database.types';
+import { useSiteSettings } from '../lib/useSiteSettings';
 
 interface SlangCardProps {
   slang: SlangData;
@@ -17,6 +18,7 @@ interface SlangCardProps {
 
 export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, onApprove, onReject, onEdit }) => {
   const { user, appUser } = useAuth();
+  const siteSettings = useSiteSettings();
   const navigate = useNavigate();
   const isNsfwBlurred = slang.is_nsfw && !appUser?.show_nsfw;
 
@@ -299,8 +301,8 @@ export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, on
               </motion.button>
             </div>
 
-            {/* Suggest button - only for approved slangs and logged-in users */}
-            {user && slang.status === 'approved' && !isModeratorView && (
+            {/* Suggest button - only when suggestions are enabled */}
+            {user && slang.status === 'approved' && !isModeratorView && siteSettings.allow_suggestions && (
               <button
                 onClick={() => setShowSuggest(!showSuggest)}
                 className={cn(

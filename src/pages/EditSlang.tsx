@@ -22,11 +22,12 @@ export function EditSlang() {
   const { user, appUser, isAuthReady } = useAuth();
   const navigate = useNavigate();
 
-  // Suggestion context from URL params
-  const suggestionId = searchParams.get('suggestion_id');
-  const suggestionField = searchParams.get('suggestion_field');
-  const suggestionValue = searchParams.get('suggestion_value');
-  const suggestionUser = searchParams.get('suggestion_user');
+  // Suggestion context from URL params (sanitized)
+  const rawSuggestionId = searchParams.get('suggestion_id');
+  const suggestionId = rawSuggestionId && /^[0-9a-f-]{36}$/i.test(rawSuggestionId) ? rawSuggestionId : null;
+  const suggestionField = searchParams.get('suggestion_field')?.slice(0, 50) || null;
+  const suggestionValue = searchParams.get('suggestion_value')?.slice(0, 2000) || null;
+  const suggestionUser = searchParams.get('suggestion_user')?.slice(0, 100) || null;
 
   const [word, setWord] = useState('');
   const [pronunciation, setPronunciation] = useState('');
