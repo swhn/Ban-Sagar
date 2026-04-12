@@ -2,29 +2,47 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import {
   Loader2, CheckCircle, AlertCircle, Save, Shield, Eye, EyeOff,
-  MessageSquare, UserPlus, Globe, Bell, Trophy
+  MessageSquare, UserPlus, Globe, Bell, Trophy, ChevronDown,
+  BookOpen, Mail, FileText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
 
 interface SiteSettings {
+  // General
   allow_registrations: boolean;
   require_approval: boolean;
+  max_submissions_per_day: number;
+  // Content & Display
   allow_nsfw: boolean;
   allow_suggestions: boolean;
   show_ranking: boolean;
+  // Announcement
   site_announcement: string;
-  max_submissions_per_day: number;
+  // About Page
+  about_what_is: string;
+  about_community: string;
+  about_why_it_matters: string;
+  // Contact Page
+  contact_email: string;
+  contact_get_in_touch: string;
+  contact_report_issues: string;
 }
 
 const DEFAULT_SETTINGS: SiteSettings = {
   allow_registrations: true,
   require_approval: true,
+  max_submissions_per_day: 20,
   allow_nsfw: true,
   allow_suggestions: true,
   show_ranking: true,
   site_announcement: '',
-  max_submissions_per_day: 20,
+  about_what_is: '',
+  about_community: '',
+  about_why_it_matters: '',
+  contact_email: '',
+  contact_get_in_touch: '',
+  contact_report_issues: '',
 };
 
 export function SiteSettingsTab() {
@@ -32,10 +50,21 @@ export function SiteSettingsTab() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    general: true,
+    content: true,
+    announcement: false,
+    about: false,
+    contact: false,
+  });
 
   useEffect(() => {
     loadSettings();
   }, []);
+
+  const toggleSection = (key: string) => {
+    setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }));
+  };
 
   const loadSettings = async () => {
     setLoading(true);
@@ -98,7 +127,7 @@ export function SiteSettingsTab() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* Message */}
       <AnimatePresence>
         {message && (
@@ -112,12 +141,14 @@ export function SiteSettingsTab() {
         )}
       </AnimatePresence>
 
-      {/* Registration & Submissions */}
-      <div className="bg-surface-raised/80 rounded-2xl border border-white/[0.04] p-5 space-y-4">
-        <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-          <Globe className="w-4 h-4 text-indigo-400" /> General
-        </h3>
-
+      {/* General */}
+      <SettingsSection
+        id="general"
+        icon={<Globe className="w-4 h-4 text-indigo-400" />}
+        title="General"
+        expanded={expandedSections.general}
+        onToggle={() => toggleSection('general')}
+      >
         <ToggleSetting
           icon={<UserPlus className="w-4 h-4" />}
           label="Allow New Registrations"
@@ -125,7 +156,6 @@ export function SiteSettingsTab() {
           value={settings.allow_registrations}
           onChange={(v) => updateSetting('allow_registrations', v)}
         />
-
         <ToggleSetting
           icon={<Shield className="w-4 h-4" />}
           label="Require Approval for Submissions"
@@ -133,32 +163,23 @@ export function SiteSettingsTab() {
           value={settings.require_approval}
           onChange={(v) => updateSetting('require_approval', v)}
         />
+        <NumberSetting
+          icon={<MessageSquare className="w-4 h-4" />}
+          label="Max Submissions Per Day"
+          description="Limit per user (0 = unlimited)"
+          value={settings.max_submissions_per_day}
+          onChange={(v) => updateSetting('max_submissions_per_day', v)}
+        />
+      </SettingsSection>
 
-        <div className="flex items-center justify-between gap-4 px-4 py-3.5 rounded-xl bg-white/[0.02] border border-white/[0.04]">
-          <div className="flex items-center gap-3">
-            <MessageSquare className="w-4 h-4 text-white/30" />
-            <div>
-              <p className="text-sm font-semibold text-white/70">Max Submissions Per Day</p>
-              <p className="text-[11px] text-white/30">Limit per user (0 = unlimited)</p>
-            </div>
-          </div>
-          <input
-            type="number"
-            min={0}
-            max={100}
-            value={settings.max_submissions_per_day}
-            onChange={(e) => updateSetting('max_submissions_per_day', parseInt(e.target.value, 10) || 0)}
-            className="w-20 px-3 py-2 bg-surface/80 border border-white/[0.06] rounded-lg text-sm text-white text-center outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500/30"
-          />
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="bg-surface-raised/80 rounded-2xl border border-white/[0.04] p-5 space-y-4">
-        <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-          <Eye className="w-4 h-4 text-indigo-400" /> Content
-        </h3>
-
+      {/* Content & Display */}
+      <SettingsSection
+        id="content"
+        icon={<Eye className="w-4 h-4 text-emerald-400" />}
+        title="Content & Display"
+        expanded={expandedSections.content}
+        onToggle={() => toggleSection('content')}
+      >
         <ToggleSetting
           icon={<EyeOff className="w-4 h-4" />}
           label="Allow NSFW Content"
@@ -166,7 +187,6 @@ export function SiteSettingsTab() {
           value={settings.allow_nsfw}
           onChange={(v) => updateSetting('allow_nsfw', v)}
         />
-
         <ToggleSetting
           icon={<MessageSquare className="w-4 h-4" />}
           label="Allow Suggestions"
@@ -174,7 +194,6 @@ export function SiteSettingsTab() {
           value={settings.allow_suggestions}
           onChange={(v) => updateSetting('allow_suggestions', v)}
         />
-
         <ToggleSetting
           icon={<Trophy className="w-4 h-4" />}
           label="Show Rankings"
@@ -182,13 +201,16 @@ export function SiteSettingsTab() {
           value={settings.show_ranking}
           onChange={(v) => updateSetting('show_ranking', v)}
         />
-      </div>
+      </SettingsSection>
 
       {/* Announcement */}
-      <div className="bg-surface-raised/80 rounded-2xl border border-white/[0.04] p-5 space-y-4">
-        <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-          <Bell className="w-4 h-4 text-indigo-400" /> Announcement
-        </h3>
+      <SettingsSection
+        id="announcement"
+        icon={<Bell className="w-4 h-4 text-amber-400" />}
+        title="Announcement Banner"
+        expanded={expandedSections.announcement}
+        onToggle={() => toggleSection('announcement')}
+      >
         <div>
           <p className="text-[11px] text-white/30 mb-2">Displayed as a banner on the home page (leave empty to hide)</p>
           <textarea
@@ -201,7 +223,78 @@ export function SiteSettingsTab() {
           />
           <p className="text-[10px] text-white/15 mt-1 text-right">{settings.site_announcement.length}/500</p>
         </div>
-      </div>
+      </SettingsSection>
+
+      {/* About Page */}
+      <SettingsSection
+        id="about"
+        icon={<BookOpen className="w-4 h-4 text-purple-400" />}
+        title="About Page"
+        badge="Page"
+        expanded={expandedSections.about}
+        onToggle={() => toggleSection('about')}
+      >
+        <p className="text-[11px] text-white/30 -mt-1 mb-1">Customize the content shown on the About page. Leave empty to use defaults.</p>
+
+        <TextAreaSetting
+          label="What is Ban Sagar?"
+          placeholder="Ban Sagar (ဘန်းဆာဂါ) is a community-driven online dictionary..."
+          value={settings.about_what_is}
+          onChange={(v) => updateSetting('about_what_is', v)}
+          rows={4}
+        />
+        <TextAreaSetting
+          label="Community Powered"
+          placeholder="Every word in our dictionary is contributed by real people..."
+          value={settings.about_community}
+          onChange={(v) => updateSetting('about_community', v)}
+          rows={4}
+        />
+        <TextAreaSetting
+          label="Why It Matters"
+          placeholder="Slang and informal language are an important part of any culture..."
+          value={settings.about_why_it_matters}
+          onChange={(v) => updateSetting('about_why_it_matters', v)}
+          rows={4}
+        />
+      </SettingsSection>
+
+      {/* Contact Page */}
+      <SettingsSection
+        id="contact"
+        icon={<Mail className="w-4 h-4 text-teal-400" />}
+        title="Contact Page"
+        badge="Page"
+        expanded={expandedSections.contact}
+        onToggle={() => toggleSection('contact')}
+      >
+        <p className="text-[11px] text-white/30 -mt-1 mb-1">Customize the content shown on the Contact page. Leave empty to use defaults.</p>
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold text-white/40 uppercase tracking-wider">Contact Email</label>
+          <input
+            type="email"
+            value={settings.contact_email}
+            onChange={(e) => updateSetting('contact_email', e.target.value)}
+            placeholder="saiwailyanhtun@gmail.com"
+            className="w-full px-4 py-2.5 bg-surface/80 border border-white/[0.06] rounded-xl text-sm text-white placeholder-white/20 outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500/30"
+          />
+        </div>
+        <TextAreaSetting
+          label="Get in Touch"
+          placeholder="Have questions, feedback, or suggestions? We're always happy to hear from our community..."
+          value={settings.contact_get_in_touch}
+          onChange={(v) => updateSetting('contact_get_in_touch', v)}
+          rows={3}
+        />
+        <TextAreaSetting
+          label="Report Issues"
+          placeholder="Found a bug or have a feature request? Found inaccurate or inappropriate content?..."
+          value={settings.contact_report_issues}
+          onChange={(v) => updateSetting('contact_report_issues', v)}
+          rows={3}
+        />
+      </SettingsSection>
 
       {/* Save */}
       <button
@@ -212,6 +305,49 @@ export function SiteSettingsTab() {
         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
         Save Settings
       </button>
+    </div>
+  );
+}
+
+function SettingsSection({
+  id, icon, title, badge, expanded, onToggle, children,
+}: {
+  id: string; icon: React.ReactNode; title: string; badge?: string;
+  expanded: boolean; onToggle: () => void; children: React.ReactNode;
+}) {
+  return (
+    <div className="bg-surface-raised/80 rounded-2xl border border-white/[0.04] overflow-hidden">
+      <button
+        onClick={onToggle}
+        className="flex items-center gap-2 w-full p-5 text-left hover:bg-white/[0.02] transition-colors"
+      >
+        {icon}
+        <h3 className="text-sm font-bold text-white uppercase tracking-wider flex-1">{title}</h3>
+        {badge && (
+          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/15">
+            {badge}
+          </span>
+        )}
+        <ChevronDown className={cn(
+          "w-4 h-4 text-white/30 transition-transform",
+          expanded && "rotate-180"
+        )} />
+      </button>
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-5 pb-5 space-y-3">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -249,5 +385,53 @@ function ToggleSetting({
         </div>
       </div>
     </button>
+  );
+}
+
+function NumberSetting({
+  icon, label, description, value, onChange,
+}: {
+  icon: React.ReactNode; label: string; description: string;
+  value: number; onChange: (v: number) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 px-4 py-3.5 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+      <div className="flex items-center gap-3">
+        <span className="text-white/30">{icon}</span>
+        <div>
+          <p className="text-sm font-semibold text-white/70">{label}</p>
+          <p className="text-[11px] text-white/30">{description}</p>
+        </div>
+      </div>
+      <input
+        type="number"
+        min={0}
+        max={100}
+        value={value}
+        onChange={(e) => onChange(parseInt(e.target.value, 10) || 0)}
+        className="w-20 px-3 py-2 bg-surface/80 border border-white/[0.06] rounded-lg text-sm text-white text-center outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500/30"
+      />
+    </div>
+  );
+}
+
+function TextAreaSetting({
+  label, placeholder, value, onChange, rows = 3,
+}: {
+  label: string; placeholder: string; value: string;
+  onChange: (v: string) => void; rows?: number;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-xs font-semibold text-white/40 uppercase tracking-wider">{label}</label>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        maxLength={2000}
+        rows={rows}
+        placeholder={placeholder}
+        className="w-full px-4 py-3 bg-surface/80 border border-white/[0.06] rounded-xl text-sm text-white placeholder-white/20 outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500/30 resize-none"
+      />
+    </div>
   );
 }

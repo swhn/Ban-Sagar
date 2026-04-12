@@ -1,9 +1,56 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Users, Heart, Globe, ArrowLeft } from 'lucide-react';
+import { BookOpen, Users, Heart, Globe, ArrowLeft, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { supabase } from '../lib/supabase';
+
+const DEFAULTS = {
+  about_what_is:
+    "Ban Sagar (ဘန်းဆာဂါ) is a community-driven online dictionary dedicated to documenting and preserving Myanmar's rich collection of slang words, street language, and colloquial expressions. Our mission is to create a comprehensive, searchable resource that captures the living language of Myanmar streets.",
+  about_community:
+    "Every word in our dictionary is contributed by real people from Myanmar's diverse communities. Whether you're from Yangon, Mandalay, or anywhere else in Myanmar, your knowledge of local slang helps preserve our cultural heritage.\n\nContributors can add new words, suggest improvements, vote on definitions, and earn badges for their contributions. Our moderation team reviews all submissions to maintain quality and accuracy.",
+  about_why_it_matters:
+    "Slang and informal language are an important part of any culture. They reflect how people actually communicate in everyday life. By documenting these words, we help future generations understand the culture, humor, and creativity of Myanmar's people.\n\nWhether you're a Myanmar native curious about new slang, a language learner wanting to understand informal speech, or a researcher studying linguistic trends — Ban Sagar is here for you.",
+};
 
 export function About() {
+  const [content, setContent] = useState(DEFAULTS);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const { data } = await supabase
+          .from('site_settings')
+          .select('key, value')
+          .in('key', ['about_what_is', 'about_community', 'about_why_it_matters']);
+
+        if (data) {
+          const loaded = { ...DEFAULTS };
+          data.forEach((row: any) => {
+            if (row.value && row.key in loaded) {
+              (loaded as any)[row.key] = row.value;
+            }
+          });
+          setContent(loaded);
+        }
+      } catch (err) {
+        // Use defaults on error
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-24">
+        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -30,45 +77,27 @@ export function About() {
           icon={<Globe className="w-5 h-5 text-indigo-400" />}
           title="What is Ban Sagar?"
         >
-          <p>
-            Ban Sagar (ဘန်းဆာဂါ) is a community-driven online dictionary dedicated to
-            documenting and preserving Myanmar's rich collection of slang words, street
-            language, and colloquial expressions. Our mission is to create a comprehensive,
-            searchable resource that captures the living language of Myanmar streets.
-          </p>
+          {content.about_what_is.split('\n').map((p, i) => (
+            <p key={i}>{p}</p>
+          ))}
         </Section>
 
         <Section
           icon={<Users className="w-5 h-5 text-emerald-400" />}
           title="Community Powered"
         >
-          <p>
-            Every word in our dictionary is contributed by real people from Myanmar's diverse
-            communities. Whether you're from Yangon, Mandalay, or anywhere else in Myanmar,
-            your knowledge of local slang helps preserve our cultural heritage.
-          </p>
-          <p>
-            Contributors can add new words, suggest improvements, vote on definitions,
-            and earn badges for their contributions. Our moderation team reviews all
-            submissions to maintain quality and accuracy.
-          </p>
+          {content.about_community.split('\n').filter(Boolean).map((p, i) => (
+            <p key={i}>{p}</p>
+          ))}
         </Section>
 
         <Section
           icon={<Heart className="w-5 h-5 text-pink-400" />}
           title="Why It Matters"
         >
-          <p>
-            Slang and informal language are an important part of any culture. They reflect
-            how people actually communicate in everyday life. By documenting these words,
-            we help future generations understand the culture, humor, and creativity of
-            Myanmar's people.
-          </p>
-          <p>
-            Whether you're a Myanmar native curious about new slang, a language learner
-            wanting to understand informal speech, or a researcher studying linguistic
-            trends — Ban Sagar is here for you.
-          </p>
+          {content.about_why_it_matters.split('\n').filter(Boolean).map((p, i) => (
+            <p key={i}>{p}</p>
+          ))}
         </Section>
       </div>
 

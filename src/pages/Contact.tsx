@@ -1,9 +1,55 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, MessageCircle, ArrowLeft, Send } from 'lucide-react';
+import { Mail, MessageCircle, ArrowLeft, Send, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { supabase } from '../lib/supabase';
+
+const DEFAULTS = {
+  contact_email: 'saiwailyanhtun@gmail.com',
+  contact_get_in_touch:
+    "Have questions, feedback, or suggestions? We're always happy to hear from our community. Here's how you can reach us:",
+  contact_report_issues:
+    "Found a bug or have a feature request? Found inaccurate or inappropriate content? Please let us know through email and we'll address it as soon as possible.",
+};
 
 export function Contact() {
+  const [content, setContent] = useState(DEFAULTS);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const { data } = await supabase
+          .from('site_settings')
+          .select('key, value')
+          .in('key', ['contact_email', 'contact_get_in_touch', 'contact_report_issues']);
+
+        if (data) {
+          const loaded = { ...DEFAULTS };
+          data.forEach((row: any) => {
+            if (row.value && row.key in loaded) {
+              (loaded as any)[row.key] = row.value;
+            }
+          });
+          setContent(loaded);
+        }
+      } catch (err) {
+        // Use defaults on error
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-24">
+        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -32,18 +78,17 @@ export function Contact() {
             <h2 className="text-lg font-display font-bold text-white">Get in Touch</h2>
           </div>
           <div className="space-y-3 text-sm text-white/60 leading-relaxed">
-            <p>
-              Have questions, feedback, or suggestions? We're always happy to hear from
-              our community. Here's how you can reach us:
-            </p>
+            {content.contact_get_in_touch.split('\n').filter(Boolean).map((p, i) => (
+              <p key={i}>{p}</p>
+            ))}
           </div>
 
           <div className="space-y-3 pt-2">
             <ContactItem
               icon={<Mail className="w-4 h-4" />}
               label="Email"
-              value="saiwailyanhtun@gmail.com"
-              href="mailto:saiwailyanhtun@gmail.com"
+              value={content.contact_email}
+              href={`mailto:${content.contact_email}`}
             />
           </div>
         </div>
@@ -54,10 +99,9 @@ export function Contact() {
             <h2 className="text-lg font-display font-bold text-white">Report Issues</h2>
           </div>
           <div className="space-y-3 text-sm text-white/60 leading-relaxed">
-            <p>
-              Found a bug or have a feature request? Found inaccurate or inappropriate
-              content? Please let us know through email and we'll address it as soon as possible.
-            </p>
+            {content.contact_report_issues.split('\n').filter(Boolean).map((p, i) => (
+              <p key={i}>{p}</p>
+            ))}
             <p>
               For content-related suggestions on specific slang words, you can also use
               the <Link to="/contribute" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">Suggest</Link> feature
