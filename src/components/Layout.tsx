@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { BookOpen, LogIn, LogOut, PlusCircle, Sparkles, Home, Menu, X, Users, Settings, ShieldAlert, Sun, Moon } from 'lucide-react';
+import { LogIn, LogOut, PlusCircle, Sparkles, Home, Menu, X, Users, Settings, ShieldAlert, Sun, Moon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { useTheme } from '../lib/useTheme';
@@ -34,10 +34,12 @@ export function Layout() {
       {/* Desktop & Tablet Header */}
       <header className="bg-surface/80 backdrop-blur-xl border-b border-white/[0.04] sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5 group shrink-0">
-            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-1.5 rounded-xl text-white shadow-lg shadow-indigo-500/20 group-hover:shadow-indigo-500/40 transition-all group-hover:scale-105 active:scale-95">
-              <BookOpen className="w-5 h-5" />
-            </div>
+          <Link to="/" className="flex items-center gap-2 group shrink-0">
+            <img
+              src="/favicon-192x192.png"
+              alt="Ban Sagar"
+              className="w-8 h-8 rounded-lg group-hover:scale-105 active:scale-95 transition-transform"
+            />
             <span className="font-display font-bold text-lg sm:text-xl tracking-tight text-white">
               Ban Sagar
             </span>

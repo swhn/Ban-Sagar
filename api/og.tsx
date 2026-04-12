@@ -40,24 +40,16 @@ export default async function handler(req: Request) {
           }}
         />
 
-        {/* Logo badge */}
-        <div
+        {/* Logo */}
+        <img
+          src="https://bansagar.madebysai.com/favicon-192x192.png"
+          width="80"
+          height="80"
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '72px',
-            height: '72px',
-            borderRadius: '18px',
-            background: 'linear-gradient(135deg, #6366f1, #a855f7)',
+            borderRadius: '16px',
             marginBottom: '32px',
-            fontSize: '32px',
-            fontWeight: 800,
-            color: 'white',
           }}
-        >
-          BS
-        </div>
+        />
 
         {/* Word */}
         <div
