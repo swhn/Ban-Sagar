@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { BookOpen, Users, Heart, Globe, ArrowLeft, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { supabase } from '../lib/supabase';
+import { useMeta } from '../lib/useMeta';
 
 const DEFAULTS = {
   about_what_is:
@@ -16,6 +17,12 @@ const DEFAULTS = {
 export function About() {
   const [content, setContent] = useState(DEFAULTS);
   const [loading, setLoading] = useState(true);
+
+  useMeta({
+    title: 'About',
+    description: "Learn about Ban Sagar, Myanmar's community-driven slang dictionary dedicated to documenting and preserving Burmese street language.",
+    url: '/about',
+  });
 
   useEffect(() => {
     const load = async () => {

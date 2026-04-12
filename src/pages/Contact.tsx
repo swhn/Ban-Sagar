@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 import { Mail, MessageCircle, ArrowLeft, Send, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { supabase } from '../lib/supabase';
+import { useMeta } from '../lib/useMeta';
 
 const DEFAULTS = {
-  contact_email: 'saiwailyanhtun@gmail.com',
+  contact_email: 'ban-sagar@madebysai.com',
   contact_get_in_touch:
     "Have questions, feedback, or suggestions? We're always happy to hear from our community. Here's how you can reach us:",
   contact_report_issues:
@@ -15,6 +16,12 @@ const DEFAULTS = {
 export function Contact() {
   const [content, setContent] = useState(DEFAULTS);
   const [loading, setLoading] = useState(true);
+
+  useMeta({
+    title: 'Contact',
+    description: 'Get in touch with the Ban Sagar team. Report issues, share feedback, or suggest improvements.',
+    url: '/contact',
+  });
 
   useEffect(() => {
     const load = async () => {

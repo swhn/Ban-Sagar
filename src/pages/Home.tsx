@@ -8,6 +8,7 @@ import { GradientBackground } from '../components/GradientBackground';
 import { LoadingGrid } from '../components/LoadingSkeleton';
 import { useAuth } from '../contexts/AuthContext';
 import { cn } from '../lib/utils';
+import { useMeta } from '../lib/useMeta';
 
 type SortTab = 'trending' | 'latest' | 'most_upvote' | 'random';
 type TrendingPeriod = 'day' | 'week' | 'month' | 'year';
@@ -31,6 +32,7 @@ const getTrendingScore = (slang: SlangData, period: TrendingPeriod) => {
 };
 
 export function Home() {
+  useMeta({ url: '/' });
   const { appUser } = useAuth();
   const [slangs, setSlangs] = useState<SlangData[]>([]);
   const [loading, setLoading] = useState(true);

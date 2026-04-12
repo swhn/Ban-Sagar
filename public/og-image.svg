@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a14"/>
+      <stop offset="50%" style="stop-color:#0f0f1e"/>
+      <stop offset="100%" style="stop-color:#0a0a14"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="100%" style="stop-color:#a855f7"/>
+    </linearGradient>
+    <linearGradient id="icon-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="100%" style="stop-color:#a855f7"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <!-- Subtle grid pattern -->
+  <g opacity="0.03">
+    <line x1="0" y1="0" x2="1200" y2="630" stroke="white" stroke-width="1"/>
+    <line x1="400" y1="0" x2="1200" y2="420" stroke="white" stroke-width="1"/>
+    <line x1="800" y1="0" x2="1200" y2="210" stroke="white" stroke-width="1"/>
+    <line x1="0" y1="210" x2="800" y2="630" stroke="white" stroke-width="1"/>
+    <line x1="0" y1="420" x2="400" y2="630" stroke="white" stroke-width="1"/>
+  </g>
+  <!-- Accent glow -->
+  <ellipse cx="600" cy="280" rx="300" ry="150" fill="#6366f1" opacity="0.06"/>
+  <!-- Icon -->
+  <rect x="522" y="140" width="156" height="156" rx="36" fill="url(#icon-bg)"/>
+  <text x="600" y="200" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="80" fill="white" dominant-baseline="middle">BS</text>
+  <text x="600" y="254" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-weight="600" font-size="28" fill="rgba(255,255,255,0.7)" dominant-baseline="middle">ဗန်းစကား</text>
+  <!-- Title -->
+  <text x="600" y="370" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="56" fill="white">Ban Sagar</text>
+  <!-- Subtitle -->
+  <text x="600" y="420" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-weight="500" font-size="24" fill="rgba(255,255,255,0.5)">Myanmar's Community-Driven Slang Dictionary</text>
+  <!-- Bottom accent line -->
+  <rect x="480" y="470" width="240" height="3" rx="1.5" fill="url(#accent)" opacity="0.6"/>
+  <!-- Domain -->
+  <text x="600" y="520" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-weight="600" font-size="20" fill="rgba(255,255,255,0.3)">bansagar.madebysai.com</text>
+</svg>

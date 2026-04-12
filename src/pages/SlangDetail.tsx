@@ -6,6 +6,7 @@ import { SlangData } from '../lib/database.types';
 import { Loader2, ArrowLeft, Sparkles, Share2, Home, Copy, Check } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn, generateSlug } from '../lib/utils';
+import { useMeta, getOgImageUrl } from '../lib/useMeta';
 
 export function SlangDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -14,6 +15,18 @@ export function SlangDetail() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const viewedRef = React.useRef(false);
+
+  // Dynamic SEO meta tags for each word
+  useMeta({
+    title: slang ? `${slang.word}${slang.pronunciation ? ` (${slang.pronunciation})` : ''}` : undefined,
+    description: slang
+      ? `${slang.word}: ${slang.meaning_english || slang.meaning_burmese || ''}`.slice(0, 160)
+      : undefined,
+    url: slang ? `/slang/${slang.slug || slang.id}` : undefined,
+    image: slang
+      ? getOgImageUrl(slang.word, slang.meaning_english || slang.meaning_burmese, slang.pronunciation)
+      : undefined,
+  });
 
   useEffect(() => {
     const fetchSlang = async () => {

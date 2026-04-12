@@ -2,8 +2,15 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Shield, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useMeta } from '../lib/useMeta';
 
 export function Privacy() {
+  useMeta({
+    title: 'Privacy Policy',
+    description: "Ban Sagar's privacy policy. Learn how we collect, use, and protect your data.",
+    url: '/privacy',
+  });
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
