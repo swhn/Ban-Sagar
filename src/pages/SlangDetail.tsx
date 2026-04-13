@@ -3,10 +3,12 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { SlangCard } from '../components/SlangCard';
 import { SlangData } from '../lib/database.types';
-import { Loader2, ArrowLeft, Sparkles, Share2, Home, Copy, Check } from 'lucide-react';
+import { Loader2, ArrowLeft, Sparkles, Share2, Home, Copy, Check, ChevronRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn, generateSlug } from '../lib/utils';
 import { useMeta, getOgImageUrl } from '../lib/useMeta';
+
+const BASE_URL = 'https://bansagar.madebysai.com';
 
 export function SlangDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -16,16 +18,42 @@ export function SlangDetail() {
   const [copied, setCopied] = useState(false);
   const viewedRef = React.useRef(false);
 
-  // Dynamic SEO meta tags for each word
+  // Dynamic SEO meta tags + structured data for each word
+  const slangUrl = slang ? `/slang/${slang.slug || slang.id}` : undefined;
+  const slangDescription = slang
+    ? `${slang.word}: ${slang.meaning || slang.meaning_burmese || ''}`.slice(0, 160)
+    : undefined;
+
   useMeta({
     title: slang ? `${slang.word}${slang.pronunciation ? ` (${slang.pronunciation})` : ''}` : undefined,
-    description: slang
-      ? `${slang.word}: ${slang.meaning_english || slang.meaning_burmese || ''}`.slice(0, 160)
-      : undefined,
-    url: slang ? `/slang/${slang.slug || slang.id}` : undefined,
+    description: slangDescription,
+    url: slangUrl,
     image: slang
-      ? getOgImageUrl(slang.word, slang.meaning_english || slang.meaning_burmese, slang.pronunciation)
+      ? getOgImageUrl(slang.word, slang.meaning || slang.meaning_burmese, slang.pronunciation)
       : undefined,
+    jsonLd: slang ? [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: BASE_URL },
+          { '@type': 'ListItem', position: 2, name: slang.word, item: `${BASE_URL}${slangUrl}` },
+        ],
+      },
+      {
+        '@context': 'https://schema.org',
+        '@type': 'DefinedTerm',
+        name: slang.word,
+        description: slang.meaning,
+        inDefinedTermSet: {
+          '@type': 'DefinedTermSet',
+          name: 'Ban Sagar - Myanmar Slang Dictionary',
+          url: BASE_URL,
+        },
+        url: `${BASE_URL}${slangUrl}`,
+        ...(slang.meaning_burmese ? { alternateName: slang.meaning_burmese } : {}),
+      },
+    ] : undefined,
   });
 
   useEffect(() => {
@@ -165,6 +193,15 @@ export function SlangDetail() {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-2xl mx-auto space-y-4"
     >
+      {/* Breadcrumb */}
+      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm text-white/40 font-medium">
+        <Link to="/" className="hover:text-white/70 transition-colors flex items-center gap-1">
+          <Home className="w-3.5 h-3.5" /> Home
+        </Link>
+        <ChevronRight className="w-3.5 h-3.5 text-white/20" />
+        <span className="text-white/70 truncate max-w-[200px] font-burmese">{slang.word}</span>
+      </nav>
+
       <div className="flex items-center justify-between">
         <button
           onClick={() => navigate(-1)}

@@ -5,11 +5,14 @@ const DEFAULT_TITLE = 'Ban Sagar - Myanmar Slang Dictionary';
 const DEFAULT_DESCRIPTION =
   "Myanmar's community-driven slang dictionary. Discover, learn, and contribute to the largest collection of Burmese street language and colloquial expressions.";
 
+const JSON_LD_ID = 'dynamic-json-ld';
+
 interface MetaOptions {
   title?: string;
   description?: string;
   url?: string;
   image?: string;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
 function setMetaTag(property: string, content: string) {
@@ -24,7 +27,22 @@ function setMetaTag(property: string, content: string) {
   el.setAttribute('content', content);
 }
 
-export function useMeta({ title, description, url, image }: MetaOptions) {
+function setJsonLd(data: Record<string, unknown> | Record<string, unknown>[] | undefined) {
+  let el = document.getElementById(JSON_LD_ID) as HTMLScriptElement | null;
+  if (!data) {
+    el?.remove();
+    return;
+  }
+  if (!el) {
+    el = document.createElement('script');
+    el.id = JSON_LD_ID;
+    el.type = 'application/ld+json';
+    document.head.appendChild(el);
+  }
+  el.textContent = JSON.stringify(Array.isArray(data) ? data : data);
+}
+
+export function useMeta({ title, description, url, image, jsonLd }: MetaOptions) {
   useEffect(() => {
     const fullTitle = title ? `${title} | Ban Sagar` : DEFAULT_TITLE;
     const desc = description || DEFAULT_DESCRIPTION;
@@ -51,10 +69,14 @@ export function useMeta({ title, description, url, image }: MetaOptions) {
     }
     canonical.href = pageUrl;
 
+    // Update JSON-LD structured data
+    setJsonLd(jsonLd);
+
     return () => {
       document.title = DEFAULT_TITLE;
+      setJsonLd(undefined);
     };
-  }, [title, description, url, image]);
+  }, [title, description, url, image, jsonLd]);
 }
 
 /**
