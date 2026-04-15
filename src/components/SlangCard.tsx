@@ -258,6 +258,8 @@ export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, on
                 onClick={() => handleVote('up')}
                 animate={voteAnimating === 'up' ? { scale: [1, 1.15, 1] } : {}}
                 transition={{ duration: 0.3 }}
+                aria-label={`Upvote ${slang.word}, ${optimisticUpvotes} upvotes`}
+                aria-pressed={userVote === 'up'}
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-sm font-semibold",
                   userVote === 'up' ? "text-indigo-400 bg-indigo-500/10" : "text-white/40 hover:bg-white/[0.04] hover:text-white/70"
@@ -281,6 +283,8 @@ export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, on
                 onClick={() => handleVote('down')}
                 animate={voteAnimating === 'down' ? { scale: [1, 1.15, 1] } : {}}
                 transition={{ duration: 0.3 }}
+                aria-label={`Downvote ${slang.word}, ${optimisticDownvotes} downvotes`}
+                aria-pressed={userVote === 'down'}
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-sm font-semibold",
                   userVote === 'down' ? "text-red-400 bg-red-500/10" : "text-white/40 hover:bg-white/[0.04] hover:text-white/70"

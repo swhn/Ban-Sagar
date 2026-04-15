@@ -194,14 +194,17 @@ export function Home() {
         transition={{ delay: 0.15 }}
         className="relative max-w-xl mx-auto z-20 px-2"
         ref={searchRef}
+        role="search"
+        aria-label="Search slang words"
       >
         <div className="absolute inset-y-0 left-2 pl-4 flex items-center pointer-events-none">
-          <Search className="h-5 w-5 text-white/25" />
+          <Search className="h-5 w-5 text-white/25" aria-hidden="true" />
         </div>
         <input
-          type="text"
+          type="search"
           className="block w-full pl-12 pr-4 py-4 bg-surface-raised/80 backdrop-blur-sm border border-white/[0.06] rounded-2xl text-white placeholder-white/25 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/20 text-base transition-all"
           placeholder="Search word or meaning..."
+          aria-label="Search word or meaning"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onFocus={() => setIsFocused(true)}

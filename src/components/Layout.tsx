@@ -31,6 +31,11 @@ export function Layout() {
 
   return (
     <div className="min-h-screen bg-surface font-sans text-text-primary flex flex-col">
+      {/* Skip to content */}
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-indigo-500 focus:text-white focus:rounded-lg focus:text-sm focus:font-semibold">
+        Skip to content
+      </a>
+
       {/* Desktop & Tablet Header */}
       <header className="bg-surface/80 backdrop-blur-xl border-b border-white/[0.04] sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -46,7 +51,7 @@ export function Layout() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
             <Link
               to="/"
               className={cn(
@@ -123,6 +128,8 @@ export function Layout() {
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 text-white/60 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+              aria-expanded={mobileMenuOpen}
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -148,7 +155,7 @@ export function Layout() {
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
               className="fixed top-16 left-0 right-0 z-50 md:hidden bg-surface-raised/95 backdrop-blur-xl border-b border-white/[0.06] shadow-2xl shadow-black/40"
             >
-              <nav className="max-w-6xl mx-auto px-4 py-4 flex flex-col gap-1">
+              <nav className="max-w-6xl mx-auto px-4 py-4 flex flex-col gap-1" aria-label="Mobile navigation">
                 <Link to="/" className={cn("flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all", isActive('/') ? "bg-white/5 text-white" : "text-white/60")}>
                   <Home className="w-5 h-5" /> Home
                 </Link>
@@ -211,7 +218,7 @@ export function Layout() {
       </AnimatePresence>
 
       {/* Main Content */}
-      <main className="flex-1 w-full flex flex-col">
+      <main id="main-content" className="flex-1 w-full flex flex-col">
         <motion.div
           key={location.pathname}
           initial={{ opacity: 0, y: 8 }}
@@ -244,7 +251,7 @@ export function Layout() {
       </footer>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface/90 backdrop-blur-xl border-t border-white/[0.06] pb-safe">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface/90 backdrop-blur-xl border-t border-white/[0.06] pb-safe" aria-label="Bottom navigation">
         <div className="flex items-center justify-around h-14 max-w-md mx-auto">
           <Link
             to="/"
@@ -269,6 +276,7 @@ export function Layout() {
           {user && (
             <Link
               to="/add"
+              aria-label="Add new slang word"
               className="flex items-center justify-center w-12 h-12 -mt-5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg shadow-indigo-500/30 text-white active:scale-90 transition-transform"
             >
               <PlusCircle className="w-6 h-6" />
