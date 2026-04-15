@@ -1,5 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { AuthProvider } from './contexts/AuthContext';
 import { SiteSettingsProvider } from './lib/useSiteSettings';
 import { ThemeProvider } from './lib/useTheme';
@@ -52,6 +53,7 @@ export default function App() {
             </Routes>
           </Suspense>
           </BrowserRouter>
+          <Analytics />
         </SiteSettingsProvider>
       </AuthProvider>
     </ThemeProvider>

@@ -72,8 +72,9 @@ export function Privacy() {
         <PolicySection title="5. Cookies & Storage">
           <p>
             We use browser local storage and session storage to maintain your login state
-            and preferences (such as NSFW content settings). We do not use tracking cookies
-            or third-party analytics services.
+            and preferences (such as NSFW content settings). We use Vercel Analytics to
+            collect anonymous, aggregated usage data (page views, referrers, device type).
+            Vercel Analytics is privacy-focused and does not use cookies or track individual users.
           </p>
         </PolicySection>
 
