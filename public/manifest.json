@@ -1,0 +1,26 @@
+{
+  "name": "Ban Sagar - Myanmar Slang Dictionary",
+  "short_name": "Ban Sagar",
+  "description": "Myanmar's community-driven slang dictionary. Discover, learn, and contribute to Burmese street language.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#06060b",
+  "theme_color": "#0a0a0f",
+  "orientation": "portrait-primary",
+  "lang": "my",
+  "categories": ["education", "reference"],
+  "icons": [
+    {
+      "src": "/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
