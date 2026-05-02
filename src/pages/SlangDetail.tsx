@@ -90,10 +90,6 @@ export function SlangDetail() {
               .eq('id', slangData.id)
               .then(({ error }) => {
                 if (error) console.error('Slug update error:', error);
-                else {
-                  // Replace URL with the new slug without reloading
-                  window.history.replaceState(null, '', `/slang/${newSlug}`);
-                }
               });
           }
 

@@ -134,10 +134,10 @@ export function EditSlang() {
     try {
       const validExamples = examples.filter(ex => ex.trim() !== '');
 
-      // Regenerate slug if word changed or slug is empty
+      // Only generate a slug if the entry doesn't have one yet — never change an existing slug
       let slug = existingSlug;
-      const newSlug = generateSlug(word.trim(), pronunciation.trim() || null);
-      if (!slug || slug !== newSlug) {
+      if (!slug) {
+        const newSlug = generateSlug(word.trim(), pronunciation.trim() || null);
         const { data: slugExists } = await supabase
           .from('slangs')
           .select('id')
