@@ -7,6 +7,7 @@ import { Plus, X, Loader2, ArrowLeft, Edit3, CheckCircle, AlertCircle, AlertTria
 import { motion, AnimatePresence } from 'motion/react';
 import { cn, generateSlug } from '../lib/utils';
 import { generateSlangDetails } from '../lib/gemini';
+import { useI18n } from '../lib/i18n';
 
 const FIELD_LABELS: Record<string, string> = {
   meaning: 'Meaning (EN)',
@@ -20,6 +21,7 @@ export function EditSlang() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const { user, appUser, isAuthReady } = useAuth();
+  const { t } = useI18n();
   const navigate = useNavigate();
 
   // Suggestion context from URL params (sanitized)
@@ -203,14 +205,14 @@ export function EditSlang() {
         onClick={() => navigate(-1)}
         className="flex items-center gap-1.5 px-3 py-2 bg-white/[0.03] border border-white/[0.06] text-white/50 hover:text-white text-sm font-medium rounded-xl transition-all active:scale-95 mb-6"
       >
-        <ArrowLeft className="w-4 h-4" /> Back
+        <ArrowLeft className="w-4 h-4" /> {t('general.back')}
       </button>
 
       <div className="mb-6 text-center">
         <div className="bg-indigo-500/10 w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-indigo-500/15">
           <Edit3 className="w-7 h-7 text-indigo-400" />
         </div>
-        <h1 className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight">Edit Slang</h1>
+        <h1 className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight">{t('edit.title')}</h1>
       </div>
 
       {/* Suggestion context banner */}
@@ -252,7 +254,7 @@ export function EditSlang() {
       <form onSubmit={handleSubmit} className="bg-surface-raised/80 p-5 sm:p-7 rounded-2xl border border-white/[0.04] space-y-5">
         <div>
           <label htmlFor="word" className="block text-[11px] font-bold text-text-secondary mb-1.5 uppercase tracking-wider">
-            Slang Word <span className="text-red-400">*</span>
+            {t('add.word')} <span className="text-red-400">*</span>
           </label>
           <div className="flex gap-2">
             <input
@@ -269,7 +271,7 @@ export function EditSlang() {
                 className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 border border-purple-500/20 text-purple-300 font-semibold rounded-xl transition-all active:scale-95 disabled:opacity-40 disabled:pointer-events-none text-sm whitespace-nowrap shrink-0"
               >
                 {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                {isGenerating ? 'Generating...' : 'AI Fill'}
+                {isGenerating ? t('add.generating') : t('add.aiFill')}
               </button>
             )}
           </div>
@@ -292,7 +294,7 @@ export function EditSlang() {
 
         <div>
           <label htmlFor="pronunciation" className="block text-[11px] font-bold text-text-secondary mb-1.5 uppercase tracking-wider">
-            Pronunciation
+            {t('add.pronunciation')}
           </label>
           <input
             type="text" id="pronunciation" maxLength={100}
@@ -304,7 +306,7 @@ export function EditSlang() {
 
         <div>
           <label htmlFor="meaning" className="block text-[11px] font-bold text-text-secondary mb-1.5 uppercase tracking-wider">
-            Meaning (English) <span className="text-red-400">*</span>
+            {t('add.meaningEn')} <span className="text-red-400">*</span>
           </label>
           <textarea
             id="meaning" required maxLength={1000} rows={3}
@@ -316,7 +318,7 @@ export function EditSlang() {
 
         <div>
           <label htmlFor="meaningBurmese" className="block text-[11px] font-bold text-text-secondary mb-1.5 uppercase tracking-wider">
-            Meaning (Burmese) <span className="text-red-400">*</span>
+            {t('add.meaningMm')} <span className="text-red-400">*</span>
           </label>
           <textarea
             id="meaningBurmese" required maxLength={1000} rows={3}
@@ -328,7 +330,7 @@ export function EditSlang() {
 
         <div>
           <label htmlFor="status" className="block text-[11px] font-bold text-text-secondary mb-1.5 uppercase tracking-wider">
-            Status
+            {t('edit.status')}
           </label>
           <div className="flex gap-2">
             {(['pending', 'approved', 'rejected'] as SlangStatus[]).map(s => (
@@ -376,24 +378,24 @@ export function EditSlang() {
               <div className="flex items-center gap-1.5">
                 <AlertTriangle className={cn("w-3.5 h-3.5", isNsfw ? "text-red-400" : "text-white/30")} />
                 <span className={cn("text-sm font-semibold", isNsfw ? "text-red-300" : "text-white/60")}>
-                  NSFW Content
+                  {t('add.nsfwContent')}
                 </span>
               </div>
-              <p className="text-[11px] text-white/30 mt-0.5">Mark if this slang contains explicit or sensitive content</p>
+              <p className="text-[11px] text-white/30 mt-0.5">{t('add.nsfwHint')}</p>
             </div>
           </button>
         </div>
 
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="block text-[11px] font-bold text-text-secondary uppercase tracking-wider">Examples</label>
+            <label className="block text-[11px] font-bold text-text-secondary uppercase tracking-wider">{t('add.examples')}</label>
             {examples.length < 5 && (
               <button
                 type="button"
                 onClick={handleAddExample}
                 className="text-xs text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/15 px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1 transition-colors border border-indigo-500/15"
               >
-                <Plus className="w-3.5 h-3.5" /> Add
+                <Plus className="w-3.5 h-3.5" /> {t('add.addExample')}
               </button>
             )}
           </div>
@@ -423,7 +425,7 @@ export function EditSlang() {
             onClick={() => navigate(-1)}
             className="px-5 py-2.5 text-white/50 font-semibold hover:bg-white/[0.03] rounded-xl transition-colors text-sm text-center"
           >
-            Cancel
+            {t('add.cancel')}
           </button>
           <button
             type="submit"
@@ -431,7 +433,7 @@ export function EditSlang() {
             className="px-6 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white font-semibold rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 text-sm"
           >
             {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-            Save Changes
+            {t('edit.save')}
           </button>
         </div>
       </form>

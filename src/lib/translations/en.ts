@@ -77,6 +77,8 @@ export const en = {
   'add.cancel': 'Cancel',
   'add.duplicate': 'Did you mean one of these?',
   'add.notDuplicate': 'Not a duplicate — continue adding',
+  'add.autoApproved': 'Your submission will be auto-approved.',
+  'add.willBeReviewed': 'Your submission will be reviewed before appearing.',
   'add.signInRequired': 'You need to sign in to contribute.',
   'add.cooldown': 'Contribution Cooldown',
 

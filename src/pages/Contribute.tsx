@@ -6,6 +6,7 @@ import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
 import { ContributorStats } from '../lib/achievements';
 import { useSiteSettings } from '../lib/useSiteSettings';
+import { useI18n } from '../lib/i18n';
 
 import { AddWordTab } from '../components/contribute/AddWordTab';
 import { HistoryTab } from '../components/contribute/HistoryTab';
@@ -18,6 +19,7 @@ type ContributeTab = 'add' | 'history' | 'leaderboard' | 'achievements' | 'revie
 
 export function Contribute() {
   const { user, appUser, isAuthReady } = useAuth();
+  const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<ContributeTab>('add');
   const [contributors, setContributors] = useState<ContributorStats[]>([]);
   const [loading, setLoading] = useState(false);
@@ -99,8 +101,8 @@ export function Contribute() {
         <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg shadow-indigo-500/15">
           <PenLine className="w-7 h-7 text-white" />
         </div>
-        <h1 className="text-2xl sm:text-3xl font-display font-bold text-white">Contribute</h1>
-        <p className="text-text-secondary text-sm">Add words, track your progress, earn achievements</p>
+        <h1 className="text-2xl sm:text-3xl font-display font-bold text-white">{t('contribute.title')}</h1>
+        <p className="text-text-secondary text-sm">{t('contribute.subtitle')}</p>
       </div>
 
       {/* Tabs */}

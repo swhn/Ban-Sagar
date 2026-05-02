@@ -77,6 +77,8 @@ export const my: Record<string, string> = {
   'add.cancel': 'ပယ်ဖျက်ရန်',
   'add.duplicate': 'ဤစကားလုံးများထဲမှ ဆိုလိုသလား?',
   'add.notDuplicate': 'ထပ်တူမဟုတ်ပါ — ဆက်ထည့်ပါ',
+  'add.autoApproved': 'သင့်စာကို အလိုအလျောက် အတည်ပြုပါမည်။',
+  'add.willBeReviewed': 'သင့်စာကို စစ်ဆေးပြီးမှ ပြသပါမည်။',
   'add.signInRequired': 'ပါဝင်ရန် အကောင့်ဝင်ပါ။',
   'add.cooldown': 'ခဏစောင့်ပါ',
 

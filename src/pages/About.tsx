@@ -4,6 +4,7 @@ import { BookOpen, Users, Heart, Globe, ArrowLeft, Loader2 } from 'lucide-react'
 import { motion } from 'motion/react';
 import { supabase } from '../lib/supabase';
 import { useMeta } from '../lib/useMeta';
+import { useI18n } from '../lib/i18n';
 
 const DEFAULTS = {
   about_what_is:
@@ -15,6 +16,7 @@ const DEFAULTS = {
 };
 
 export function About() {
+  const { t } = useI18n();
   const [content, setContent] = useState(DEFAULTS);
   const [loading, setLoading] = useState(true);
 
@@ -68,21 +70,21 @@ export function About() {
         to="/"
         className="inline-flex items-center gap-1.5 px-3 py-2 bg-white/[0.03] border border-white/[0.06] text-white/50 hover:text-white text-sm font-medium rounded-xl transition-all active:scale-95"
       >
-        <ArrowLeft className="w-4 h-4" /> Back
+        <ArrowLeft className="w-4 h-4" /> {t('general.back')}
       </Link>
 
       <div className="text-center space-y-3">
         <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg shadow-indigo-500/15">
           <BookOpen className="w-7 h-7 text-white" />
         </div>
-        <h1 className="text-2xl sm:text-3xl font-display font-bold text-white">About Ban Sagar</h1>
-        <p className="text-text-secondary text-sm">Myanmar's community-driven slang dictionary</p>
+        <h1 className="text-2xl sm:text-3xl font-display font-bold text-white">{t('about.title')}</h1>
+        <p className="text-text-secondary text-sm">{t('home.hero.subtitle')}</p>
       </div>
 
       <div className="space-y-6">
         <Section
           icon={<Globe className="w-5 h-5 text-indigo-400" />}
-          title="What is Ban Sagar?"
+          title={t('about.whatIs')}
         >
           {content.about_what_is.split('\n').map((p, i) => (
             <p key={i}>{p}</p>
@@ -91,7 +93,7 @@ export function About() {
 
         <Section
           icon={<Users className="w-5 h-5 text-emerald-400" />}
-          title="Community Powered"
+          title={t('about.community')}
         >
           {content.about_community.split('\n').filter(Boolean).map((p, i) => (
             <p key={i}>{p}</p>
@@ -100,7 +102,7 @@ export function About() {
 
         <Section
           icon={<Heart className="w-5 h-5 text-pink-400" />}
-          title="Why It Matters"
+          title={t('about.whyMatters')}
         >
           {content.about_why_it_matters.split('\n').filter(Boolean).map((p, i) => (
             <p key={i}>{p}</p>
@@ -113,7 +115,7 @@ export function About() {
           to="/contribute"
           className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white font-semibold rounded-xl text-sm shadow-lg shadow-indigo-500/20 active:scale-95 transition-all"
         >
-          Start Contributing
+          {t('home.startContributing')}
         </Link>
       </div>
     </motion.div>

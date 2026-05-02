@@ -5,9 +5,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { User, Settings, LogOut, Eye, EyeOff, Loader2, CheckCircle, AlertCircle, Save, ShieldAlert, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import { useI18n } from '../lib/i18n';
 
 export function Profile() {
   const { user, appUser, logout, toggleNsfw, isAuthReady } = useAuth();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState(appUser?.display_name || '');
   const [saving, setSaving] = useState(false);
@@ -68,7 +70,7 @@ export function Profile() {
         <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg shadow-indigo-500/15">
           <Settings className="w-7 h-7 text-white" />
         </div>
-        <h1 className="text-2xl sm:text-3xl font-display font-bold text-white">Profile Settings</h1>
+        <h1 className="text-2xl sm:text-3xl font-display font-bold text-white">{t('profile.title')}</h1>
       </div>
 
       {/* Message */}
@@ -115,7 +117,7 @@ export function Profile() {
         <div className="space-y-4">
           <div>
             <label className="block text-[11px] font-bold text-text-secondary mb-1.5 uppercase tracking-wider">
-              Display Name
+              {t('profile.displayName')}
             </label>
             <div className="flex gap-2">
               <input
@@ -132,7 +134,7 @@ export function Profile() {
                 className="flex items-center gap-1.5 px-4 py-3 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/15 rounded-xl font-semibold text-sm transition-all border border-indigo-500/15 disabled:opacity-40 shrink-0"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                Save
+                {t('profile.save')}
               </button>
             </div>
           </div>
@@ -140,7 +142,7 @@ export function Profile() {
           {/* NSFW Toggle */}
           <div>
             <label className="block text-[11px] font-bold text-text-secondary mb-1.5 uppercase tracking-wider">
-              Content Preferences
+              {t('profile.contentPrefs')}
             </label>
             <button
               onClick={handleNsfwToggle}
@@ -164,7 +166,7 @@ export function Profile() {
                 <div className="flex items-center gap-1.5">
                   {appUser.show_nsfw ? <Eye className="w-4 h-4 text-red-400" /> : <EyeOff className="w-4 h-4 text-white/30" />}
                   <span className={cn("text-sm font-semibold", appUser.show_nsfw ? "text-red-300" : "text-white/60")}>
-                    Show NSFW Content
+                    {t('profile.showNsfw')}
                   </span>
                 </div>
                 <p className="text-[11px] text-white/30 mt-0.5">Reveal blurred explicit slang words</p>
@@ -179,7 +181,7 @@ export function Profile() {
         onClick={handleLogout}
         className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500/[0.06] border border-red-500/15 text-red-400 hover:bg-red-500/10 rounded-xl font-semibold text-sm transition-all"
       >
-        <LogOut className="w-4 h-4" /> Sign Out
+        <LogOut className="w-4 h-4" /> {t('profile.signOut')}
       </button>
 
       {/* NSFW Warning Modal */}
@@ -238,7 +240,7 @@ export function Profile() {
                     onClick={() => setShowNsfwWarning(false)}
                     className="flex-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.06] text-white/60 hover:text-white hover:bg-white/[0.06] rounded-xl text-sm font-semibold transition-all"
                   >
-                    Cancel
+                    {t('general.cancel')}
                   </button>
                   <button
                     onClick={confirmNsfw}

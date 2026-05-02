@@ -7,11 +7,13 @@ import { Loader2, ArrowLeft, Sparkles, Share2, Home, Copy, Check, ChevronRight }
 import { motion } from 'motion/react';
 import { cn, generateSlug } from '../lib/utils';
 import { useMeta, getOgImageUrl } from '../lib/useMeta';
+import { useI18n } from '../lib/i18n';
 
 const BASE_URL = 'https://bansagar.madebysai.com';
 
 export function SlangDetail() {
   const { slug } = useParams<{ slug: string }>();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [slang, setSlang] = useState<SlangData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -171,13 +173,13 @@ export function SlangDetail() {
         <div className="bg-white/[0.03] w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5">
           <Sparkles className="w-8 h-8 text-white/15" />
         </div>
-        <h2 className="text-2xl font-display font-bold text-white mb-2">Slang not found</h2>
-        <p className="text-text-secondary mb-6 text-sm px-6">This slang doesn't exist or has been removed.</p>
+        <h2 className="text-2xl font-display font-bold text-white mb-2">{t('notFound.title')}</h2>
+        <p className="text-text-secondary mb-6 text-sm px-6">{t('notFound.description')}</p>
         <Link
           to="/"
           className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl text-sm shadow-lg shadow-indigo-500/20 active:scale-95 transition-all"
         >
-          <Home className="w-4 h-4" /> Back to Home
+          <Home className="w-4 h-4" /> {t('notFound.goHome')}
         </Link>
       </motion.div>
     );
@@ -192,7 +194,7 @@ export function SlangDetail() {
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm text-white/40 font-medium">
         <Link to="/" className="hover:text-white/70 transition-colors flex items-center gap-1">
-          <Home className="w-3.5 h-3.5" /> Home
+          <Home className="w-3.5 h-3.5" /> {t('nav.home')}
         </Link>
         <ChevronRight className="w-3.5 h-3.5 text-white/20" />
         <span className="text-white/70 truncate max-w-[200px] font-burmese">{slang.word}</span>
@@ -203,7 +205,7 @@ export function SlangDetail() {
           onClick={() => navigate(-1)}
           className="flex items-center gap-1.5 px-3 py-2 bg-white/[0.03] border border-white/[0.06] text-white/50 hover:text-white hover:border-white/10 text-sm font-medium rounded-xl transition-all active:scale-95"
         >
-          <ArrowLeft className="w-4 h-4" /> Back
+          <ArrowLeft className="w-4 h-4" /> {t('detail.back')}
         </button>
 
         <button
@@ -215,7 +217,7 @@ export function SlangDetail() {
               : "bg-white/[0.03] border-white/[0.06] text-white/50 hover:text-white hover:border-white/10"
           )}
         >
-          <Share2 className="w-4 h-4" /> {copied ? 'Copied!' : 'Share'}
+          <Share2 className="w-4 h-4" /> {copied ? t('detail.copied') : t('detail.share')}
         </button>
       </div>
 
