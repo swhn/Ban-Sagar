@@ -238,7 +238,7 @@ export function SiteSettingsTab() {
 
         <TextAreaSetting
           label="What is Ban Sagar?"
-          placeholder="Ban Sagar (ဘန်းဆာဂါ) is a community-driven online dictionary..."
+          placeholder="Ban Sagar (ဗန်းစကား) is a community-driven online dictionary..."
           value={settings.about_what_is}
           onChange={(v) => updateSetting('about_what_is', v)}
           rows={4}

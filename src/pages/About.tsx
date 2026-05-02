@@ -7,7 +7,7 @@ import { useMeta } from '../lib/useMeta';
 
 const DEFAULTS = {
   about_what_is:
-    "Ban Sagar (ဘန်းဆာဂါ) is a community-driven online dictionary dedicated to documenting and preserving Myanmar's rich collection of slang words, street language, and colloquial expressions. Our mission is to create a comprehensive, searchable resource that captures the living language of Myanmar streets.",
+    "Ban Sagar (ဗန်းစကား) is a community-driven online dictionary dedicated to documenting and preserving Myanmar's rich collection of slang words, street language, and colloquial expressions. Our mission is to create a comprehensive, searchable resource that captures the living language of Myanmar streets.",
   about_community:
     "Every word in our dictionary is contributed by real people from Myanmar's diverse communities. Whether you're from Yangon, Mandalay, or anywhere else in Myanmar, your knowledge of local slang helps preserve our cultural heritage.\n\nContributors can add new words, suggest improvements, vote on definitions, and earn badges for their contributions. Our moderation team reviews all submissions to maintain quality and accuracy.",
   about_why_it_matters:
