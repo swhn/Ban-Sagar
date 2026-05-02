@@ -1,21 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, MessageCircle, ArrowLeft, Send, Loader2 } from 'lucide-react';
+import { Mail, MessageCircle, ArrowLeft, Send, Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { supabase } from '../lib/supabase';
 import { useMeta } from '../lib/useMeta';
+import { cn } from '../lib/utils';
 
 const DEFAULTS = {
   contact_email: 'ban-sagar@madebysai.com',
   contact_get_in_touch:
-    "Have questions, feedback, or suggestions? We're always happy to hear from our community. Here's how you can reach us:",
+    "Have questions, feedback, or suggestions? We're always happy to hear from our community. Send us a message using the form below or email us directly.",
   contact_report_issues:
     "Found a bug or have a feature request? Found inaccurate or inappropriate content? Please let us know through email and we'll address it as soon as possible.",
 };
 
+type FormStatus = 'idle' | 'sending' | 'sent' | 'error';
+
 export function Contact() {
   const [content, setContent] = useState(DEFAULTS);
   const [loading, setLoading] = useState(true);
+
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [subject, setSubject] = useState('');
+  const [message, setMessage] = useState('');
+  const [formStatus, setFormStatus] = useState<FormStatus>('idle');
 
   useMeta({
     title: 'Contact',
@@ -49,6 +58,32 @@ export function Contact() {
     load();
   }, []);
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || !email.trim() || !message.trim()) return;
+
+    setFormStatus('sending');
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.trim(), email: email.trim(), subject: subject.trim(), message: message.trim() }),
+      });
+
+      if (!res.ok) throw new Error('Failed');
+
+      setFormStatus('sent');
+      setName('');
+      setEmail('');
+      setSubject('');
+      setMessage('');
+      setTimeout(() => setFormStatus('idle'), 4000);
+    } catch {
+      setFormStatus('error');
+      setTimeout(() => setFormStatus('idle'), 4000);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center py-24">
@@ -79,30 +114,115 @@ export function Contact() {
       </div>
 
       <div className="space-y-6">
-        <div className="bg-surface-raised/80 rounded-2xl border border-white/[0.04] p-5 sm:p-6 space-y-4">
+        {/* Contact Form */}
+        <div className="bg-surface-raised/80 rounded-2xl border border-white/[0.04] p-5 sm:p-6 space-y-5">
           <div className="flex items-center gap-2.5">
-            <Mail className="w-5 h-5 text-indigo-400" />
-            <h2 className="text-lg font-display font-bold text-white">Get in Touch</h2>
+            <Send className="w-5 h-5 text-emerald-400" />
+            <h2 className="text-lg font-display font-bold text-white">Send a Message</h2>
           </div>
-          <div className="space-y-3 text-sm text-white/60 leading-relaxed">
+          <div className="text-sm text-white/60 leading-relaxed">
             {content.contact_get_in_touch.split('\n').filter(Boolean).map((p, i) => (
               <p key={i}>{p}</p>
             ))}
           </div>
 
-          <div className="space-y-3 pt-2">
-            <ContactItem
-              icon={<Mail className="w-4 h-4" />}
-              label="Email"
-              value={content.contact_email}
-              href={`mailto:${content.contact_email}`}
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="contact-name" className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5">Name *</label>
+                <input
+                  id="contact-name"
+                  type="text"
+                  required
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-white/[0.03] border border-white/[0.06] rounded-xl text-white text-sm placeholder-white/20 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/20 transition-all"
+                  placeholder="Your name"
+                />
+              </div>
+              <div>
+                <label htmlFor="contact-email" className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5">Email *</label>
+                <input
+                  id="contact-email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-white/[0.03] border border-white/[0.06] rounded-xl text-white text-sm placeholder-white/20 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/20 transition-all"
+                  placeholder="you@example.com"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="contact-subject" className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5">Subject</label>
+              <input
+                id="contact-subject"
+                type="text"
+                value={subject}
+                onChange={e => setSubject(e.target.value)}
+                className="w-full px-4 py-2.5 bg-white/[0.03] border border-white/[0.06] rounded-xl text-white text-sm placeholder-white/20 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/20 transition-all"
+                placeholder="What's this about?"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="contact-message" className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5">Message *</label>
+              <textarea
+                id="contact-message"
+                required
+                rows={5}
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+                className="w-full px-4 py-2.5 bg-white/[0.03] border border-white/[0.06] rounded-xl text-white text-sm placeholder-white/20 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/20 transition-all resize-none"
+                placeholder="Your message..."
+              />
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="submit"
+                disabled={formStatus === 'sending' || formStatus === 'sent'}
+                className={cn(
+                  "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95",
+                  formStatus === 'sent'
+                    ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20"
+                    : "bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30",
+                  (formStatus === 'sending' || formStatus === 'sent') && "opacity-80 cursor-not-allowed"
+                )}
+              >
+                {formStatus === 'sending' && <Loader2 className="w-4 h-4 animate-spin" />}
+                {formStatus === 'sent' && <CheckCircle className="w-4 h-4" />}
+                {formStatus === 'idle' && <Send className="w-4 h-4" />}
+                {formStatus === 'error' && <AlertTriangle className="w-4 h-4" />}
+                {formStatus === 'sending' ? 'Sending...' : formStatus === 'sent' ? 'Sent!' : formStatus === 'error' ? 'Try Again' : 'Send Message'}
+              </button>
+
+              {formStatus === 'error' && (
+                <span className="text-xs text-red-400">Something went wrong. Please try again or email us directly.</span>
+              )}
+            </div>
+          </form>
         </div>
 
+        {/* Direct Email */}
         <div className="bg-surface-raised/80 rounded-2xl border border-white/[0.04] p-5 sm:p-6 space-y-4">
           <div className="flex items-center gap-2.5">
-            <Send className="w-5 h-5 text-emerald-400" />
+            <Mail className="w-5 h-5 text-indigo-400" />
+            <h2 className="text-lg font-display font-bold text-white">Or Email Us Directly</h2>
+          </div>
+          <ContactItem
+            icon={<Mail className="w-4 h-4" />}
+            label="Email"
+            value={content.contact_email}
+            href={`mailto:${content.contact_email}`}
+          />
+        </div>
+
+        {/* Report Issues */}
+        <div className="bg-surface-raised/80 rounded-2xl border border-white/[0.04] p-5 sm:p-6 space-y-4">
+          <div className="flex items-center gap-2.5">
+            <AlertTriangle className="w-5 h-5 text-amber-400" />
             <h2 className="text-lg font-display font-bold text-white">Report Issues</h2>
           </div>
           <div className="space-y-3 text-sm text-white/60 leading-relaxed">
