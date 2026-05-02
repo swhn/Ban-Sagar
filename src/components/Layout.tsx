@@ -236,7 +236,7 @@ export function Layout() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-white/20">
               <Sparkles className="w-3.5 h-3.5 text-indigo-500/40" />
-              <span className="text-xs font-medium">Ban Sagar - Myanmar Slang Dictionary</span>
+              <span className="text-xs font-medium">Ban Sagar - ဗန်းစကား Myanmar Slang Words Dictionary</span>
             </div>
             <div className="flex items-center gap-4">
               <Link to="/about" className="text-xs text-white/20 hover:text-white/50 transition-colors font-medium">About</Link>

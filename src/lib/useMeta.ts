@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 
 const BASE_URL = 'https://bansagar.madebysai.com';
-const DEFAULT_TITLE = 'Ban Sagar - Myanmar Slang Dictionary';
+const DEFAULT_TITLE = 'Ban Sagar (ဗန်းစကား) - Myanmar Slang Words Dictionary';
 const DEFAULT_DESCRIPTION =
-  "Myanmar's community-driven slang dictionary. Discover, learn, and contribute to the largest collection of Burmese street language and colloquial expressions.";
+  "ဗန်းစကား အဘိဓာန် — The largest Myanmar slang words dictionary. Discover, learn, and contribute to Burmese street language, colloquial expressions, and trending slang.";
 
 const JSON_LD_ID = 'dynamic-json-ld';
 
@@ -44,7 +44,7 @@ function setJsonLd(data: Record<string, unknown> | Record<string, unknown>[] | u
 
 export function useMeta({ title, description, url, image, jsonLd }: MetaOptions) {
   useEffect(() => {
-    const fullTitle = title ? `${title} | Ban Sagar` : DEFAULT_TITLE;
+    const fullTitle = title ? `${title} | Ban Sagar ဗန်းစကား` : DEFAULT_TITLE;
     const desc = description || DEFAULT_DESCRIPTION;
     const pageUrl = url ? `${BASE_URL}${url}` : BASE_URL;
     const ogImage = image || `${BASE_URL}/og-image.png`;
