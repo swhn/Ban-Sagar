@@ -15,11 +15,11 @@ export const my: Record<string, string> = {
   'nav.skipToContent': 'အကြောင်းအရာသို့ ကျော်ရန်',
 
   // Home
-  'home.hero.badge': 'မြန်မာ ဗန်းစကား {count} လုံးနှင့် တိုးပွားနေသည်',
+  'home.hero.badge': 'မြန်မာ ဗန်းစကား {count} လုံးနှင့် ဆက်လက်တိုးပွားနေသည်',
   'home.hero.title1': 'မြန်မာ',
   'home.hero.title2': 'ဗန်းစကား',
   'home.hero.title3': 'အဘိဓာန်',
-  'home.hero.subtitle': 'မြန်မာ့လမ်းပေါ်ရဲ့ ဘာသာစကားကို ရှာဖွေလေ့လာပါ။',
+  'home.hero.subtitle': 'မြန်မာ့လမ်းဘေးက ဘာသာစကားကို ရှာဖွေလေ့လာပါ။',
   'home.search.placeholder': 'စကားလုံး သို့မဟုတ် အဓိပ္ပါယ် ရှာရန်...',
   'home.search.label': 'စကားလုံး သို့မဟုတ် အဓိပ္ပါယ် ရှာရန်',
   'home.search.ariaLabel': 'ဗန်းစကား ရှာဖွေရန်',
@@ -33,7 +33,7 @@ export const my: Record<string, string> = {
   'home.period.year': 'တစ်နှစ်',
   'home.noResults': '"{term}" အတွက် ရလဒ်မရှိပါ',
   'home.signInToContribute': 'ပါဝင်ရန် အကောင့်ဝင်ပါ',
-  'home.startContributing': 'စတင်ပါဝင်ရန်',
+  'home.startContributing': 'စတင်ပါဝင်ကူညီရန်',
 
   // Slang Card
   'slang.upvote': '{word} ကို ထောက်ခံရန်၊ ထောက်ခံမဲ {count} ခု',
@@ -89,7 +89,7 @@ export const my: Record<string, string> = {
 
   // Contribute
   'contribute.title': 'ပါဝင်ရန်',
-  'contribute.subtitle': 'စကားလုံးများထည့်ပါ၊ တံဆိပ်များရယူပါ၊ ဦးဆောင်ပါ',
+  'contribute.subtitle': 'စကားလုံးများထည့်ပြီး ကူညီပါ၊ တံဆိပ်များရယူပါ၊ ဦးဆောင်ပါ',
   'contribute.addWord': 'စကားလုံးထည့်ရန်',
   'contribute.leaderboard': 'ဦးဆောင်သူများ',
   'contribute.badges': 'တံဆိပ်များ',
@@ -98,7 +98,7 @@ export const my: Record<string, string> = {
 
   // Profile
   'profile.title': 'ပရိုဖိုင် ဆက်တင်များ',
-  'profile.displayName': 'ပြသမည့်အမည်',
+  'profile.displayName': 'အမည်',
   'profile.save': 'သိမ်းရန်',
   'profile.contentPrefs': 'အကြောင်းအရာ ဆက်တင်များ',
   'profile.showNsfw': 'NSFW အကြောင်းအရာ ပြသရန်',
@@ -108,7 +108,7 @@ export const my: Record<string, string> = {
   // About
   'about.title': 'Ban Sagar အကြောင်း',
   'about.whatIs': 'Ban Sagar ဆိုတာ ဘာလဲ?',
-  'about.community': 'အသိုင်းအဝိုင်း ဦးဆောင်မှု',
+  'about.community': 'လူတိုင်း၏ ဦးဆောင်မှု',
   'about.whyMatters': 'ဘာကြောင့် အရေးကြီးသလဲ',
 
   // Contact
@@ -138,7 +138,7 @@ export const my: Record<string, string> = {
   'footer.about': 'အကြောင်း',
   'footer.contact': 'ဆက်သွယ်ရန်',
   'footer.privacy': 'ကိုယ်ရေးကိုယ်တာ',
-  'footer.copyright': 'အသိုင်းအဝိုင်း ဦးဆောင်မှု။',
+  'footer.copyright': 'လူတိုင်း၏ ဦးဆောင်မှု။',
 
   // General
   'general.back': 'နောက်သို့',
@@ -148,7 +148,7 @@ export const my: Record<string, string> = {
   'general.error': 'တစ်ခုခု မှားယွင်းသွားပါသည်',
 
   // Suggest fields
-  'field.general': 'အထွေထွေ တိုးတက်မှု',
+  'field.general': 'အထွေထွေ အကြံပြုမှု',
   'field.meaning': 'အင်္ဂလိပ် အဓိပ္ပါယ်',
   'field.meaning_burmese': 'မြန်မာ အဓိပ္ပါယ်',
   'field.pronunciation': 'အသံထွက်',
