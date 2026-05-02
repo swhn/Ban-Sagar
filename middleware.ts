@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+export const config = {
+  matcher: ['/((?!api|_next|assets|fonts|favicon|robots|sitemap|manifest).*)'],
+};
 
 const BOT_AGENTS = [
   'googlebot',
@@ -18,28 +19,24 @@ const BOT_AGENTS = [
 ];
 
 const STATIC_EXTENSIONS = /\.(js|css|png|jpg|jpeg|gif|ico|svg|woff2?|ttf|json|xml|txt|webp|mp4|webm)$/i;
-const API_OR_ASSET = /^\/(api|assets|fonts|favicon|og-image|robots|sitemap|manifest)/;
 
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+export default function middleware(request: Request) {
+  const url = new URL(request.url);
+  const { pathname } = url;
 
-  if (STATIC_EXTENSIONS.test(pathname) || API_OR_ASSET.test(pathname)) {
-    return NextResponse.next();
+  if (STATIC_EXTENSIONS.test(pathname)) {
+    return;
   }
 
   const ua = (request.headers.get('user-agent') || '').toLowerCase();
   const isBot = BOT_AGENTS.some(bot => ua.includes(bot));
 
   if (!isBot) {
-    return NextResponse.next();
+    return;
   }
 
   const renderUrl = new URL('/api/render', request.url);
   renderUrl.searchParams.set('path', pathname);
 
-  return NextResponse.rewrite(renderUrl);
+  return fetch(renderUrl);
 }
-
-export const config = {
-  matcher: ['/((?!api|_next|assets|fonts|favicon|robots|sitemap|manifest).*)'],
-};
