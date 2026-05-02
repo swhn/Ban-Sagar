@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { SlangData, VoteType } from '../lib/database.types';
 import { useSiteSettings } from '../lib/useSiteSettings';
+import { useI18n } from '../lib/i18n';
 
 interface SlangCardProps {
   slang: SlangData;
@@ -19,6 +20,7 @@ interface SlangCardProps {
 export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, onApprove, onReject, onEdit }) => {
   const { user, appUser } = useAuth();
   const siteSettings = useSiteSettings();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const isNsfwBlurred = slang.is_nsfw && !appUser?.show_nsfw;
 
@@ -258,7 +260,7 @@ export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, on
                 onClick={() => handleVote('up')}
                 animate={voteAnimating === 'up' ? { scale: [1, 1.15, 1] } : {}}
                 transition={{ duration: 0.3 }}
-                aria-label={`Upvote ${slang.word}, ${optimisticUpvotes} upvotes`}
+                aria-label={t('slang.upvote', { word: slang.word, count: optimisticUpvotes })}
                 aria-pressed={userVote === 'up'}
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-sm font-semibold",
@@ -283,7 +285,7 @@ export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, on
                 onClick={() => handleVote('down')}
                 animate={voteAnimating === 'down' ? { scale: [1, 1.15, 1] } : {}}
                 transition={{ duration: 0.3 }}
-                aria-label={`Downvote ${slang.word}, ${optimisticDownvotes} downvotes`}
+                aria-label={t('slang.downvote', { word: slang.word, count: optimisticDownvotes })}
                 aria-pressed={userVote === 'down'}
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-sm font-semibold",

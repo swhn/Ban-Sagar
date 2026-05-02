@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { AuthProvider } from './contexts/AuthContext';
 import { SiteSettingsProvider } from './lib/useSiteSettings';
 import { ThemeProvider } from './lib/useTheme';
+import { I18nProvider } from './lib/i18n';
 import { Layout } from './components/Layout';
 import { Loader2 } from 'lucide-react';
 
@@ -31,6 +32,7 @@ function PageLoader() {
 export default function App() {
   return (
     <ThemeProvider>
+      <I18nProvider>
       <AuthProvider>
         <SiteSettingsProvider>
           <BrowserRouter>
@@ -56,6 +58,7 @@ export default function App() {
           <Analytics />
         </SiteSettingsProvider>
       </AuthProvider>
+      </I18nProvider>
     </ThemeProvider>
   );
 }

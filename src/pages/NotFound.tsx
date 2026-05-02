@@ -3,11 +3,14 @@ import { Link } from 'react-router-dom';
 import { Home, Search } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useMeta } from '../lib/useMeta';
+import { useI18n } from '../lib/i18n';
 
 export function NotFound() {
+  const { t } = useI18n();
+
   useMeta({
-    title: 'Page Not Found',
-    description: 'The page you are looking for does not exist.',
+    title: t('notFound.title'),
+    description: t('notFound.description'),
   });
 
   return (
@@ -20,10 +23,10 @@ export function NotFound() {
         404
       </p>
       <h1 className="text-xl sm:text-2xl font-display font-bold text-white mb-2">
-        Page Not Found
+        {t('notFound.title')}
       </h1>
       <p className="text-text-secondary text-sm mb-8 px-4">
-        The page you're looking for doesn't exist or has been moved.
+        {t('notFound.description')}
       </p>
 
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -31,13 +34,13 @@ export function NotFound() {
           to="/"
           className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white font-semibold rounded-xl text-sm shadow-lg shadow-indigo-500/20 active:scale-95 transition-all"
         >
-          <Home className="w-4 h-4" /> Go Home
+          <Home className="w-4 h-4" /> {t('notFound.goHome')}
         </Link>
         <Link
           to="/contribute"
           className="flex items-center gap-2 px-5 py-2.5 bg-white/[0.04] border border-white/[0.06] text-white/60 hover:text-white hover:bg-white/[0.06] font-semibold rounded-xl text-sm transition-all active:scale-95"
         >
-          <Search className="w-4 h-4" /> Browse Words
+          <Search className="w-4 h-4" /> {t('notFound.browseWords')}
         </Link>
       </div>
     </motion.div>

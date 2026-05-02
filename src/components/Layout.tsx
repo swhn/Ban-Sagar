@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LogIn, LogOut, PlusCircle, Sparkles, Home, Menu, X, Users, Settings, ShieldAlert, Sun, Moon } from 'lucide-react';
+import { LogIn, LogOut, PlusCircle, Sparkles, Home, Menu, X, Users, Settings, ShieldAlert, Sun, Moon, Languages } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { useTheme } from '../lib/useTheme';
+import { useI18n } from '../lib/i18n';
 
 export function Layout() {
   const { user, appUser, login, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { locale, setLocale, t } = useI18n();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -28,12 +30,13 @@ export function Layout() {
   }, [mobileMenuOpen]);
 
   const isActive = (path: string) => location.pathname === path;
+  const toggleLocale = () => setLocale(locale === 'en' ? 'my' : 'en');
 
   return (
     <div className="min-h-screen bg-surface font-sans text-text-primary flex flex-col">
       {/* Skip to content */}
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-indigo-500 focus:text-white focus:rounded-lg focus:text-sm focus:font-semibold">
-        Skip to content
+        {t('nav.skipToContent')}
       </a>
 
       {/* Desktop & Tablet Header */}
@@ -59,7 +62,7 @@ export function Layout() {
                 isActive('/') ? "text-white bg-white/5" : "text-white/50 hover:text-white/80 hover:bg-white/[0.03]"
               )}
             >
-              <Home className="w-4 h-4" /> Home
+              <Home className="w-4 h-4" /> {t('nav.home')}
             </Link>
             <Link
               to="/contribute"
@@ -68,7 +71,7 @@ export function Layout() {
                 isActive('/contribute') ? "text-emerald-300 bg-emerald-500/10" : "text-white/50 hover:text-emerald-300 hover:bg-white/[0.03]"
               )}
             >
-              <Users className="w-4 h-4" /> Contribute
+              <Users className="w-4 h-4" /> {t('nav.contribute')}
             </Link>
 
             {user && appUser?.role === 'admin' && (
@@ -79,9 +82,18 @@ export function Layout() {
                   isActive('/dashboard') ? "text-rose-300 bg-rose-500/10" : "text-white/50 hover:text-rose-300 hover:bg-white/[0.03]"
                 )}
               >
-                <ShieldAlert className="w-4 h-4" /> Admin
+                <ShieldAlert className="w-4 h-4" /> {t('nav.admin')}
               </Link>
             )}
+
+            <button
+              onClick={toggleLocale}
+              className="flex items-center gap-1.5 p-2 rounded-lg text-white/40 hover:text-white/80 hover:bg-white/[0.03] transition-all active:scale-90"
+              title={locale === 'en' ? 'မြန်မာဘာသာ' : 'English'}
+            >
+              <Languages className="w-4 h-4" />
+              <span className="text-xs font-bold">{locale === 'en' ? 'MY' : 'EN'}</span>
+            </button>
 
             <button
               onClick={toggleTheme}
@@ -99,7 +111,7 @@ export function Layout() {
                   <span className="text-sm font-semibold leading-none text-white/90">{appUser?.display_name || 'User'}</span>
                   <span className="text-[10px] uppercase tracking-wider font-bold text-indigo-400 mt-0.5">{appUser?.role}</span>
                 </div>
-                <Link to="/profile" className="group relative" title="Profile Settings">
+                <Link to="/profile" className="group relative" title={t('nav.profile')}>
                   {user.user_metadata?.avatar_url ? (
                     <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-8 h-8 rounded-full ring-2 ring-white/10 group-hover:ring-indigo-500/40 transition-all" referrerPolicy="no-referrer" />
                   ) : (
@@ -115,7 +127,7 @@ export function Layout() {
                 className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 active:scale-95"
               >
                 <LogIn className="w-4 h-4" />
-                Sign In
+                {t('nav.signIn')}
               </button>
             )}
           </nav>
@@ -129,7 +141,7 @@ export function Layout() {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 text-white/60 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
               aria-expanded={mobileMenuOpen}
-              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-label={mobileMenuOpen ? t('nav.closeMenu') : t('nav.openMenu')}
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -157,23 +169,31 @@ export function Layout() {
             >
               <nav className="max-w-6xl mx-auto px-4 py-4 flex flex-col gap-1" aria-label="Mobile navigation">
                 <Link to="/" className={cn("flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all", isActive('/') ? "bg-white/5 text-white" : "text-white/60")}>
-                  <Home className="w-5 h-5" /> Home
+                  <Home className="w-5 h-5" /> {t('nav.home')}
                 </Link>
                 <Link to="/contribute" className={cn("flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all", isActive('/contribute') ? "bg-emerald-500/10 text-emerald-300" : "text-white/60")}>
-                  <Users className="w-5 h-5" /> Contribute
+                  <Users className="w-5 h-5" /> {t('nav.contribute')}
                 </Link>
                 {user && appUser?.role === 'admin' && (
                   <Link to="/dashboard" className={cn("flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all", isActive('/dashboard') ? "bg-rose-500/10 text-rose-300" : "text-rose-400/60")}>
-                    <ShieldAlert className="w-5 h-5" /> Admin Dashboard
+                    <ShieldAlert className="w-5 h-5" /> {t('nav.adminDashboard')}
                   </Link>
                 )}
+
+                <button
+                  onClick={toggleLocale}
+                  className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all text-white/60 hover:bg-white/[0.03] w-full text-left"
+                >
+                  <Languages className="w-5 h-5" />
+                  {locale === 'en' ? 'မြန်မာဘာသာ' : 'English'}
+                </button>
 
                 <button
                   onClick={toggleTheme}
                   className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all text-white/60 hover:bg-white/[0.03] w-full text-left"
                 >
                   {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-                  {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                  {theme === 'dark' ? t('nav.lightMode') : t('nav.darkMode')}
                 </button>
 
                 <div className="h-px bg-white/[0.06] my-2" />
@@ -200,7 +220,7 @@ export function Layout() {
                       onClick={logout}
                       className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all text-white/40 hover:text-red-400 hover:bg-red-500/10 w-full text-left"
                     >
-                      <LogOut className="w-5 h-5" /> Sign Out
+                      <LogOut className="w-5 h-5" /> {t('nav.signOut')}
                     </button>
                   </>
                 ) : (
@@ -208,7 +228,7 @@ export function Layout() {
                     onClick={login}
                     className="flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white mx-4 py-3 rounded-xl text-sm font-semibold shadow-lg shadow-indigo-500/20 active:scale-95 transition-all"
                   >
-                    <LogIn className="w-4 h-4" /> Sign In with Google
+                    <LogIn className="w-4 h-4" /> {t('nav.signInGoogle')}
                   </button>
                 )}
               </nav>
@@ -236,16 +256,16 @@ export function Layout() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-white/20">
               <Sparkles className="w-3.5 h-3.5 text-indigo-500/40" />
-              <span className="text-xs font-medium">Ban Sagar - ဗန်းစကား Myanmar Slang Words Dictionary</span>
+              <span className="text-xs font-medium">{t('footer.tagline')}</span>
             </div>
             <div className="flex items-center gap-4">
-              <Link to="/about" className="text-xs text-white/20 hover:text-white/50 transition-colors font-medium">About</Link>
-              <Link to="/contact" className="text-xs text-white/20 hover:text-white/50 transition-colors font-medium">Contact</Link>
-              <Link to="/privacy" className="text-xs text-white/20 hover:text-white/50 transition-colors font-medium">Privacy</Link>
+              <Link to="/about" className="text-xs text-white/20 hover:text-white/50 transition-colors font-medium">{t('footer.about')}</Link>
+              <Link to="/contact" className="text-xs text-white/20 hover:text-white/50 transition-colors font-medium">{t('footer.contact')}</Link>
+              <Link to="/privacy" className="text-xs text-white/20 hover:text-white/50 transition-colors font-medium">{t('footer.privacy')}</Link>
             </div>
           </div>
           <p className="text-xs text-white/15 text-center sm:text-left">
-            &copy; {new Date().getFullYear()} Community Driven.
+            &copy; {new Date().getFullYear()} {t('footer.copyright')}
           </p>
         </div>
       </footer>
@@ -261,7 +281,7 @@ export function Layout() {
             )}
           >
             <Home className="w-5 h-5" />
-            <span className="text-[10px] font-semibold">Home</span>
+            <span className="text-[10px] font-semibold">{t('nav.home')}</span>
           </Link>
           <Link
             to="/contribute"
@@ -271,12 +291,12 @@ export function Layout() {
             )}
           >
             <Users className="w-5 h-5" />
-            <span className="text-[10px] font-semibold">Contribute</span>
+            <span className="text-[10px] font-semibold">{t('nav.contribute')}</span>
           </Link>
           {user && (
             <Link
               to="/add"
-              aria-label="Add new slang word"
+              aria-label={t('add.title')}
               className="flex items-center justify-center w-12 h-12 -mt-5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg shadow-indigo-500/30 text-white active:scale-90 transition-transform"
             >
               <PlusCircle className="w-6 h-6" />
@@ -295,7 +315,7 @@ export function Layout() {
               ) : (
                 <Settings className="w-5 h-5" />
               )}
-              <span className="text-[10px] font-semibold">Profile</span>
+              <span className="text-[10px] font-semibold">{t('nav.profile')}</span>
             </Link>
           ) : (
             <button
@@ -303,7 +323,7 @@ export function Layout() {
               className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all min-w-[56px] text-white/35"
             >
               <LogIn className="w-5 h-5" />
-              <span className="text-[10px] font-semibold">Sign In</span>
+              <span className="text-[10px] font-semibold">{t('nav.signIn')}</span>
             </button>
           )}
         </div>

@@ -10,6 +10,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { cn } from '../lib/utils';
 import { useMeta } from '../lib/useMeta';
 import { useSiteSettings } from '../lib/useSiteSettings';
+import { useI18n } from '../lib/i18n';
 
 type SortTab = 'trending' | 'latest' | 'most_upvote' | 'random';
 type TrendingPeriod = 'day' | 'week' | 'month' | 'year';
@@ -35,6 +36,7 @@ const getTrendingScore = (slang: SlangData, period: TrendingPeriod) => {
 export function Home() {
   useMeta({ url: '/' });
   const { appUser } = useAuth();
+  const { t } = useI18n();
   const siteSettings = useSiteSettings();
   const [slangs, setSlangs] = useState<SlangData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -172,17 +174,17 @@ export function Home() {
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-indigo-300/80 text-xs sm:text-sm font-medium mb-5"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>{slangs.length} Myanmar street slangs and counting</span>
+            <span>{t('home.hero.badge', { count: slangs.length })}</span>
           </motion.div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold text-white tracking-tight leading-[1.1]">
-            Myanmar{' '}
+            {t('home.hero.title1')}{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
-              Slang
+              {t('home.hero.title2')}
             </span>
-            {' '}Dictionary
+            {' '}{t('home.hero.title3')}
           </h1>
           <p className="text-base sm:text-lg text-text-secondary max-w-xl mx-auto leading-relaxed mt-4 px-4">
-            Discover and learn the living language of Myanmar streets.
+            {t('home.hero.subtitle')}
           </p>
         </div>
       </motion.div>
@@ -195,7 +197,7 @@ export function Home() {
         className="relative max-w-xl mx-auto z-20 px-2"
         ref={searchRef}
         role="search"
-        aria-label="Search slang words"
+        aria-label={t('home.search.ariaLabel')}
       >
         <div className="absolute inset-y-0 left-2 pl-4 flex items-center pointer-events-none">
           <Search className="h-5 w-5 text-white/25" aria-hidden="true" />
@@ -203,8 +205,8 @@ export function Home() {
         <input
           type="search"
           className="block w-full pl-12 pr-4 py-4 bg-surface-raised/80 backdrop-blur-sm border border-white/[0.06] rounded-2xl text-white placeholder-white/25 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/20 text-base transition-all"
-          placeholder="Search word or meaning..."
-          aria-label="Search word or meaning"
+          placeholder={t('home.search.placeholder')}
+          aria-label={t('home.search.label')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onFocus={() => setIsFocused(true)}
@@ -243,10 +245,10 @@ export function Home() {
           {/* Main tabs - scrollable on mobile */}
           <div className="flex gap-1 overflow-x-auto no-scrollbar pb-1 -mx-1 px-1">
             {([
-              { key: 'trending', label: 'Trending', icon: TrendingUp },
-              { key: 'latest', label: 'Latest', icon: Clock },
-              { key: 'most_upvote', label: 'Top', icon: ThumbsUp },
-              { key: 'random', label: 'Random', icon: Shuffle },
+              { key: 'trending', label: t('home.tabs.trending'), icon: TrendingUp },
+              { key: 'latest', label: t('home.tabs.latest'), icon: Clock },
+              { key: 'most_upvote', label: t('home.tabs.top'), icon: ThumbsUp },
+              { key: 'random', label: t('home.tabs.random'), icon: Shuffle },
             ] as const).map(({ key, label, icon: Icon }) => (
               <button
                 key={key}
@@ -286,7 +288,7 @@ export function Home() {
                         : 'text-white/30 hover:text-white/60'
                     )}
                   >
-                    {period === 'day' ? '24h' : `1${period[0]}`}
+                    {t(`home.period.${period}` as any)}
                   </button>
                 ))}
               </motion.div>
@@ -381,8 +383,7 @@ export function Home() {
           <div className="bg-white/[0.03] w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5">
             <BookOpen className="w-8 h-8 text-white/15" />
           </div>
-          <p className="text-white/60 text-lg font-medium">No results for "{searchTerm}"</p>
-          <p className="text-text-secondary mt-1.5 text-sm">Try a different search or contribute a new word!</p>
+          <p className="text-white/60 text-lg font-medium">{t('home.noResults', { term: searchTerm })}</p>
         </motion.div>
       )}
 
@@ -402,8 +403,8 @@ export function Home() {
               <PenLine className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-display font-bold text-white text-base">Contribute to the Dictionary</h3>
-              <p className="text-text-secondary text-sm mt-0.5">Add words, earn badges, climb the leaderboard</p>
+              <h3 className="font-display font-bold text-white text-base">{t('contribute.title')}</h3>
+              <p className="text-text-secondary text-sm mt-0.5">{t('contribute.subtitle')}</p>
             </div>
           </div>
           <ArrowRight className="w-5 h-5 text-white/20 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all shrink-0" />
