@@ -5,9 +5,6 @@ Allow: /
 # Sitemap
 Sitemap: https://bansagar.madebysai.com/sitemap.xml
 
-# Crawl-delay
-Crawl-delay: 1
-
 # Disallow admin/internal paths
 Disallow: /dashboard
 Disallow: /edit/
