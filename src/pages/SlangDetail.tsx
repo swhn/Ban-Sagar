@@ -3,11 +3,21 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { SlangCard } from '../components/SlangCard';
 import { SlangData } from '../lib/database.types';
-import { Loader2, ArrowLeft, Sparkles, Share2, Home, Copy, Check, ChevronRight } from 'lucide-react';
+import { Loader2, ArrowLeft, Sparkles, Share2, Home, Copy, Check, ChevronRight, ThumbsUp, Eye } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn, generateSlug } from '../lib/utils';
 import { useMeta, getOgImageUrl } from '../lib/useMeta';
 import { useI18n } from '../lib/i18n';
+
+interface RelatedWord {
+  id: string;
+  word: string;
+  slug: string;
+  meaning: string;
+  pronunciation: string | null;
+  upvotes: number;
+  views: number;
+}
 
 const BASE_URL = 'https://bansagar.com';
 
@@ -16,6 +26,7 @@ export function SlangDetail() {
   const { t } = useI18n();
   const navigate = useNavigate();
   const [slang, setSlang] = useState<SlangData | null>(null);
+  const [relatedWords, setRelatedWords] = useState<RelatedWord[]>([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const viewedRef = React.useRef(false);
@@ -114,6 +125,61 @@ export function SlangDetail() {
 
     fetchSlang();
   }, [slug]);
+
+  useEffect(() => {
+    if (!slang) return;
+
+    const fetchRelated = async () => {
+      const keywords = slang.meaning
+        .toLowerCase()
+        .split(/\W+/)
+        .filter(w => w.length > 3)
+        .slice(0, 5);
+
+      let related: RelatedWord[] = [];
+
+      for (const keyword of keywords) {
+        if (related.length >= 6) break;
+        const { data } = await supabase
+          .from('slangs')
+          .select('id, word, slug, meaning, pronunciation, upvotes, views')
+          .eq('status', 'approved')
+          .neq('id', slang.id)
+          .ilike('meaning', `%${keyword}%`)
+          .limit(6);
+
+        if (data) {
+          for (const item of data) {
+            if (!related.find(r => r.id === item.id)) {
+              related.push(item as RelatedWord);
+            }
+          }
+        }
+      }
+
+      if (related.length < 4) {
+        const { data } = await supabase
+          .from('slangs')
+          .select('id, word, slug, meaning, pronunciation, upvotes, views')
+          .eq('status', 'approved')
+          .neq('id', slang.id)
+          .order('upvotes', { ascending: false })
+          .limit(6);
+
+        if (data) {
+          for (const item of data) {
+            if (!related.find(r => r.id === item.id)) {
+              related.push(item as RelatedWord);
+            }
+          }
+        }
+      }
+
+      setRelatedWords(related.slice(0, 6));
+    };
+
+    fetchRelated();
+  }, [slang?.id]);
 
   const copyToClipboard = async (text: string) => {
     // Try modern clipboard API first
@@ -222,6 +288,43 @@ export function SlangDetail() {
       </div>
 
       <SlangCard slang={slang} />
+
+      {/* Related Words */}
+      {relatedWords.length > 0 && (
+        <div className="pt-4 space-y-3">
+          <h2 className="text-sm font-bold text-text-secondary uppercase tracking-wider flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-indigo-400/60" />
+            {t('detail.relatedWords')}
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            {relatedWords.map(rw => (
+              <Link
+                key={rw.id}
+                to={`/slang/${rw.slug || rw.id}`}
+                className="group bg-surface-raised/80 rounded-xl border border-white/[0.04] hover:border-white/[0.08] p-3.5 transition-all hover:bg-surface-raised"
+              >
+                <p className="font-display font-bold text-white text-base group-hover:text-indigo-300 transition-colors truncate font-burmese">
+                  {rw.word}
+                </p>
+                {rw.pronunciation && (
+                  <p className="text-xs text-white/30 mt-0.5">/{rw.pronunciation}/</p>
+                )}
+                <p className="text-xs text-white/40 mt-1.5 line-clamp-2 leading-relaxed">
+                  {rw.meaning}
+                </p>
+                <div className="flex items-center gap-3 mt-2 text-[11px] text-white/20">
+                  <span className="flex items-center gap-1">
+                    <ThumbsUp className="w-3 h-3" /> {rw.upvotes}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Eye className="w-3 h-3" /> {rw.views}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 }
