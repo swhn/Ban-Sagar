@@ -101,8 +101,8 @@ export function Privacy() {
           <p>
             If you have any questions about this Privacy Policy or your data, please
             contact us at{' '}
-            <a href="mailto:ban-sagar@madebysai.com" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
-              ban-sagar@madebysai.com
+            <a href="mailto:bansagar@madebysai.com" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
+              bansagar@madebysai.com
             </a>
             {' '}or visit our{' '}
             <Link to="/contact" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
