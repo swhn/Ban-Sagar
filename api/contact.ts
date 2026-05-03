@@ -34,7 +34,7 @@ export default async function handler(req: Request) {
     const toEmail = process.env.CONTACT_EMAIL || 'ban-sagar@madebysai.com';
 
     await resend.emails.send({
-      from: 'Ban Sagar <noreply@bansager.madebysai.com>',
+      from: 'Ban Sagar <noreply@bansagar.com>',
       to: [toEmail],
       replyTo: email,
       subject: `[Ban Sagar Contact] ${subject || 'New message'}`,

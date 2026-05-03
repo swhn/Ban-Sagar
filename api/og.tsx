@@ -42,7 +42,7 @@ export default async function handler(req: Request) {
 
         {/* Logo */}
         <img
-          src="https://bansagar.madebysai.com/favicon-192x192.png"
+          src="https://bansagar.com/favicon-192x192.png"
           width="80"
           height="80"
           style={{
@@ -120,7 +120,7 @@ export default async function handler(req: Request) {
             color: 'rgba(255,255,255,0.25)',
           }}
         >
-          bansagar.madebysai.com
+          bansagar.com
         </div>
       </div>
     ),

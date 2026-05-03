@@ -4,7 +4,7 @@ export const config = {
   runtime: 'edge',
 };
 
-const BASE_URL = 'https://bansagar.madebysai.com';
+const BASE_URL = 'https://bansagar.com';
 
 export default async function handler() {
   const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;

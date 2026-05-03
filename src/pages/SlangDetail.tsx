@@ -9,7 +9,7 @@ import { cn, generateSlug } from '../lib/utils';
 import { useMeta, getOgImageUrl } from '../lib/useMeta';
 import { useI18n } from '../lib/i18n';
 
-const BASE_URL = 'https://bansagar.madebysai.com';
+const BASE_URL = 'https://bansagar.com';
 
 export function SlangDetail() {
   const { slug } = useParams<{ slug: string }>();

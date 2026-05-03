@@ -4,7 +4,7 @@ export const config = {
   runtime: 'edge',
 };
 
-const BASE_URL = 'https://bansagar.madebysai.com';
+const BASE_URL = 'https://bansagar.com';
 
 function escapeHtml(str: string): string {
   return str
