@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { useSiteSettings } from '../lib/useSiteSettings';
 import { useI18n } from '../lib/i18n';
+import { executeRecaptcha } from '../lib/recaptcha';
 
 interface SimilarWord {
   id: string;
@@ -123,6 +124,22 @@ export function AddSlang() {
     setIsSubmitting(true);
 
     try {
+      // reCAPTCHA verification
+      const recaptchaToken = await executeRecaptcha('add_slang');
+      if (recaptchaToken) {
+        const captchaRes = await fetch('/api/verify-recaptcha', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: recaptchaToken }),
+        });
+        const captchaData = await captchaRes.json();
+        if (!captchaData.success) {
+          setErrorMsg('reCAPTCHA verification failed. Please try again.');
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       // Check daily submission limit (skip for mods/admins)
       if (!isMod && siteSettings.max_submissions_per_day > 0) {
         const todayStart = new Date();

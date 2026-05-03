@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 import { useMeta } from '../lib/useMeta';
 import { cn } from '../lib/utils';
 import { useI18n } from '../lib/i18n';
+import { executeRecaptcha } from '../lib/recaptcha';
 
 const DEFAULTS = {
   contact_email: 'ban-sagar@madebysai.com',
@@ -66,10 +67,11 @@ export function Contact() {
 
     setFormStatus('sending');
     try {
+      const recaptchaToken = await executeRecaptcha('contact');
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim(), email: email.trim(), subject: subject.trim(), message: message.trim() }),
+        body: JSON.stringify({ name: name.trim(), email: email.trim(), subject: subject.trim(), message: message.trim(), recaptchaToken }),
       });
 
       if (!res.ok) throw new Error('Failed');

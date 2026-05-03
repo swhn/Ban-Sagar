@@ -21,13 +21,35 @@ export default async function handler(req: Request) {
   }
 
   try {
-    const { name, email, subject, message } = await req.json();
+    const { name, email, subject, message, recaptchaToken } = await req.json();
 
     if (!name || !email || !message) {
       return new Response(JSON.stringify({ error: 'Name, email, and message are required' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
+    }
+
+    const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY;
+    if (recaptchaSecret) {
+      if (!recaptchaToken) {
+        return new Response(JSON.stringify({ error: 'reCAPTCHA verification required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      const captchaRes = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `secret=${encodeURIComponent(recaptchaSecret)}&response=${encodeURIComponent(recaptchaToken)}`,
+      });
+      const captchaData = await captchaRes.json();
+      if (!captchaData.success || captchaData.score < 0.5) {
+        return new Response(JSON.stringify({ error: 'reCAPTCHA verification failed' }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     const resend = new Resend(apiKey);
