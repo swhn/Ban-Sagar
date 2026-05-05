@@ -320,7 +320,7 @@ export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, on
                 title="Suggest an improvement"
               >
                 <MessageSquarePlus className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Suggest</span>
+                <span>{t('slang.suggest')}</span>
               </button>
             )}
           </div>
