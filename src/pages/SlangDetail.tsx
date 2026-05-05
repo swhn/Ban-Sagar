@@ -133,7 +133,7 @@ export function SlangDetail() {
       const keywords = slang.meaning
         .toLowerCase()
         .split(/\W+/)
-        .filter(w => w.length > 3)
+        .filter(w => w.length > 3 && /^[a-z]+$/.test(w))
         .slice(0, 5);
 
       let related: RelatedWord[] = [];
