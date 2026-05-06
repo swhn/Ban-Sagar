@@ -36,11 +36,15 @@ export function SlangDetail() {
   const slangDescription = slang
     ? `${slang.word}: ${slang.meaning || slang.meaning_burmese || ''}`.slice(0, 160)
     : undefined;
+  const slangKeywords = slang
+    ? `${slang.word}, ${slang.word} in English, ${slang.word} meaning, ${slang.word} ဗန်းစကား, myanmar slang, burmese slang`
+    : undefined;
 
   useMeta({
     title: slang ? `${slang.word}${slang.pronunciation ? ` (${slang.pronunciation})` : ''}` : undefined,
     description: slangDescription,
     url: slangUrl,
+    keywords: slangKeywords,
     image: slang
       ? getOgImageUrl(slang.word, slang.meaning || slang.meaning_burmese, slang.pronunciation)
       : undefined,

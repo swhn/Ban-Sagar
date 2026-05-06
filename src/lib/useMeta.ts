@@ -12,6 +12,7 @@ interface MetaOptions {
   description?: string;
   url?: string;
   image?: string;
+  keywords?: string;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
@@ -42,7 +43,7 @@ function setJsonLd(data: Record<string, unknown> | Record<string, unknown>[] | u
   el.textContent = JSON.stringify(Array.isArray(data) ? data : data);
 }
 
-export function useMeta({ title, description, url, image, jsonLd }: MetaOptions) {
+export function useMeta({ title, description, url, image, keywords, jsonLd }: MetaOptions) {
   useEffect(() => {
     const fullTitle = title ? `${title} | Ban Sagar ဗန်းစကား` : DEFAULT_TITLE;
     const desc = description || DEFAULT_DESCRIPTION;
@@ -52,6 +53,7 @@ export function useMeta({ title, description, url, image, jsonLd }: MetaOptions)
     document.title = fullTitle;
 
     setMetaTag('description', desc);
+    if (keywords) setMetaTag('keywords', keywords);
     setMetaTag('og:title', fullTitle);
     setMetaTag('og:description', desc);
     setMetaTag('og:url', pageUrl);

@@ -132,7 +132,9 @@ async function renderSlangPage(supabase: any, slug: string) {
     <script type="application/ld+json">${jsonLd}</script>
   `;
 
-  return renderPage(title, description, body, pageUrl);
+  const keywords = `${slang.word}, ${slang.word} in English, ${slang.word} meaning, ${slang.word} ဗန်းစကား, myanmar slang, burmese slang`;
+
+  return renderPage(title, description, body, pageUrl, keywords);
 }
 
 async function renderHomePage(supabase: any) {
@@ -162,7 +164,7 @@ async function renderHomePage(supabase: any) {
   return renderPage(title, description, body, '/');
 }
 
-function renderPage(title: string, description: string, bodyContent: string, path: string) {
+function renderPage(title: string, description: string, bodyContent: string, path: string, keywords?: string) {
   const canonicalUrl = `${BASE_URL}${path}`;
 
   const html = `<!DOCTYPE html>
@@ -172,6 +174,7 @@ function renderPage(title: string, description: string, bodyContent: string, pat
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}">
+  ${keywords ? `<meta name="keywords" content="${escapeHtml(keywords)}">` : ''}
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="${canonicalUrl}">
   <meta property="og:type" content="website">
