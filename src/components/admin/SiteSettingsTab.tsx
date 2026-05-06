@@ -221,8 +221,8 @@ export function SiteSettingsTab() {
       >
         <ToggleSetting
           icon={<UserPlus className="w-4 h-4" />}
-          label="Admin: Login Alerts"
-          description="Email admins when any user logs in"
+          label="Admin/Mod: Login Alerts"
+          description="Email admins and moderators when they log in"
           value={settings.notify_admin_login}
           onChange={(v) => updateSetting('notify_admin_login', v)}
         />

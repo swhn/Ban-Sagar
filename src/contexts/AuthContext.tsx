@@ -98,6 +98,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function notifyAdminOfLogin(authUser: User) {
     try {
+      const { data: profile } = await supabase
+        .from('users')
+        .select('role, email, display_name')
+        .eq('id', authUser.id)
+        .single();
+
+      if (!profile || (profile.role !== 'admin' && profile.role !== 'moderator')) return;
+
       const { data: setting } = await supabase
         .from('site_settings')
         .select('value')
@@ -106,23 +114,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (setting?.value !== 'true') return;
 
-      const { data: admins } = await supabase
-        .from('users')
-        .select('email')
-        .eq('role', 'admin');
-
-      if (!admins?.length) return;
-
-      const userName = authUser.user_metadata?.full_name || authUser.email || 'Unknown';
-      const userEmail = authUser.email || '';
-
-      for (const admin of admins) {
-        sendNotification('admin_login', admin.email, {
-          userName,
-          userEmail,
-          time: new Date().toLocaleString(),
-        });
-      }
+      sendNotification('admin_login', profile.email, {
+        userName: profile.display_name || authUser.email || 'Unknown',
+        userEmail: authUser.email || '',
+        time: new Date().toLocaleString(),
+      });
     } catch {}
   }
 
