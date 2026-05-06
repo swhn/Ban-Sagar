@@ -104,6 +104,11 @@ export const en = {
   'profile.showNsfw': 'Show NSFW Content',
   'profile.yourWords': 'Your Words',
   'profile.signOut': 'Sign Out',
+  'profile.emailNotifications': 'Email Notifications',
+  'profile.notifyApproved': 'Contribution Approved',
+  'profile.notifyApprovedDesc': 'Get emailed when your slang is approved',
+  'profile.notifyBadges': 'Badge Unlocked',
+  'profile.notifyBadgesDesc': 'Get notified when you earn a new badge',
 
   // About
   'about.title': 'About Ban Sagar',

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { AppUser } from '../lib/database.types';
+import { sendNotification } from '../lib/notifications';
 
 interface AuthContextType {
   user: User | null;
@@ -24,8 +25,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       handleSession(session);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       handleSession(session);
+      if (event === 'SIGNED_IN' && session?.user) {
+        notifyAdminOfLogin(session.user);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -90,6 +94,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Error loading user profile:', error);
     }
+  }
+
+  async function notifyAdminOfLogin(authUser: User) {
+    try {
+      const { data: setting } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'notify_admin_login')
+        .single();
+
+      if (setting?.value !== 'true') return;
+
+      const { data: admins } = await supabase
+        .from('users')
+        .select('email')
+        .eq('role', 'admin');
+
+      if (!admins?.length) return;
+
+      const userName = authUser.user_metadata?.full_name || authUser.email || 'Unknown';
+      const userEmail = authUser.email || '';
+
+      for (const admin of admins) {
+        sendNotification('admin_login', admin.email, {
+          userName,
+          userEmail,
+          time: new Date().toLocaleString(),
+        });
+      }
+    } catch {}
   }
 
   async function login() {

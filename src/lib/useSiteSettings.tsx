@@ -9,6 +9,9 @@ export interface SiteSettings {
   allow_suggestions: boolean;
   show_ranking: boolean;
   site_announcement: string;
+  notify_admin_login: boolean;
+  notify_contribution_approved: boolean;
+  notify_badge_unlocked: boolean;
 }
 
 const DEFAULT_SETTINGS: SiteSettings = {
@@ -19,6 +22,9 @@ const DEFAULT_SETTINGS: SiteSettings = {
   allow_suggestions: true,
   show_ranking: true,
   site_announcement: '',
+  notify_admin_login: false,
+  notify_contribution_approved: true,
+  notify_badge_unlocked: true,
 };
 
 const SiteSettingsContext = createContext<SiteSettings>(DEFAULT_SETTINGS);
