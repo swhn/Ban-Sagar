@@ -10,6 +10,8 @@ export interface AppUser {
   role: UserRole;
   show_nsfw: boolean;
   cooldown_until: string | null;
+  notify_approved: boolean;
+  notify_badges: boolean;
   created_at: string;
 }
 

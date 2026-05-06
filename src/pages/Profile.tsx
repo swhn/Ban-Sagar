@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { User, Settings, LogOut, Eye, EyeOff, Loader2, CheckCircle, AlertCircle, Save, ShieldAlert, X } from 'lucide-react';
+import { User, Settings, LogOut, Eye, EyeOff, Loader2, CheckCircle, AlertCircle, Save, ShieldAlert, X, Bell, Trophy } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { useI18n } from '../lib/i18n';
@@ -15,6 +15,24 @@ export function Profile() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [showNsfwWarning, setShowNsfwWarning] = useState(false);
+  const [notifyApproved, setNotifyApproved] = useState(appUser?.notify_approved ?? true);
+  const [notifyBadges, setNotifyBadges] = useState(appUser?.notify_badges ?? true);
+
+  const toggleNotification = async (key: 'notify_approved' | 'notify_badges', currentValue: boolean) => {
+    const newValue = !currentValue;
+    if (key === 'notify_approved') setNotifyApproved(newValue);
+    else setNotifyBadges(newValue);
+
+    const { error } = await supabase
+      .from('users')
+      .update({ [key]: newValue })
+      .eq('id', appUser!.id);
+
+    if (error) {
+      if (key === 'notify_approved') setNotifyApproved(currentValue);
+      else setNotifyBadges(currentValue);
+    }
+  };
 
   const handleSave = async () => {
     if (!appUser || !displayName.trim()) return;
@@ -172,6 +190,72 @@ export function Profile() {
                 <p className="text-[11px] text-white/30 mt-0.5">Reveal blurred explicit slang words</p>
               </div>
             </button>
+          </div>
+
+          {/* Email Notifications */}
+          <div>
+            <label className="block text-[11px] font-bold text-text-secondary mb-1.5 uppercase tracking-wider">
+              {t('profile.emailNotifications')}
+            </label>
+            <div className="space-y-2">
+              <button
+                onClick={() => toggleNotification('notify_approved', notifyApproved)}
+                className={cn(
+                  "flex items-center gap-3 w-full px-4 py-3.5 rounded-xl border transition-all text-left",
+                  notifyApproved
+                    ? "bg-indigo-500/[0.06] border-indigo-500/15"
+                    : "bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04]"
+                )}
+              >
+                <div className={cn(
+                  "w-10 h-6 rounded-full relative transition-all shrink-0",
+                  notifyApproved ? "bg-indigo-500/40" : "bg-white/10"
+                )}>
+                  <div className={cn(
+                    "absolute top-1 w-4 h-4 rounded-full transition-all",
+                    notifyApproved ? "left-5 bg-indigo-400" : "left-1 bg-white/40"
+                  )} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <Bell className={cn("w-4 h-4", notifyApproved ? "text-indigo-400" : "text-white/30")} />
+                    <span className={cn("text-sm font-semibold", notifyApproved ? "text-white/80" : "text-white/60")}>
+                      {t('profile.notifyApproved')}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-white/30 mt-0.5">{t('profile.notifyApprovedDesc')}</p>
+                </div>
+              </button>
+
+              <button
+                onClick={() => toggleNotification('notify_badges', notifyBadges)}
+                className={cn(
+                  "flex items-center gap-3 w-full px-4 py-3.5 rounded-xl border transition-all text-left",
+                  notifyBadges
+                    ? "bg-indigo-500/[0.06] border-indigo-500/15"
+                    : "bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04]"
+                )}
+              >
+                <div className={cn(
+                  "w-10 h-6 rounded-full relative transition-all shrink-0",
+                  notifyBadges ? "bg-indigo-500/40" : "bg-white/10"
+                )}>
+                  <div className={cn(
+                    "absolute top-1 w-4 h-4 rounded-full transition-all",
+                    notifyBadges ? "left-5 bg-indigo-400" : "left-1 bg-white/40"
+                  )} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <Trophy className={cn("w-4 h-4", notifyBadges ? "text-indigo-400" : "text-white/30")} />
+                    <span className={cn("text-sm font-semibold", notifyBadges ? "text-white/80" : "text-white/60")}>
+                      {t('profile.notifyBadges')}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-white/30 mt-0.5">{t('profile.notifyBadgesDesc')}</p>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
       </div>

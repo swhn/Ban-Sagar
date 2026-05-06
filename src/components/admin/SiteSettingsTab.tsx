@@ -17,6 +17,10 @@ interface SiteSettings {
   allow_nsfw: boolean;
   allow_suggestions: boolean;
   show_ranking: boolean;
+  // Notifications
+  notify_admin_login: boolean;
+  notify_contribution_approved: boolean;
+  notify_badge_unlocked: boolean;
   // Announcement
   site_announcement: string;
   // About Page
@@ -36,6 +40,9 @@ const DEFAULT_SETTINGS: SiteSettings = {
   allow_nsfw: true,
   allow_suggestions: true,
   show_ranking: true,
+  notify_admin_login: false,
+  notify_contribution_approved: true,
+  notify_badge_unlocked: true,
   site_announcement: '',
   about_what_is: '',
   about_community: '',
@@ -53,6 +60,7 @@ export function SiteSettingsTab() {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     general: true,
     content: true,
+    notifications: false,
     announcement: false,
     about: false,
     contact: false,
@@ -200,6 +208,37 @@ export function SiteSettingsTab() {
           description="Show the rankings/leaderboard tab on the Contribute page"
           value={settings.show_ranking}
           onChange={(v) => updateSetting('show_ranking', v)}
+        />
+      </SettingsSection>
+
+      {/* Email Notifications */}
+      <SettingsSection
+        id="notifications"
+        icon={<Mail className="w-4 h-4 text-rose-400" />}
+        title="Email Notifications"
+        expanded={expandedSections.notifications}
+        onToggle={() => toggleSection('notifications')}
+      >
+        <ToggleSetting
+          icon={<UserPlus className="w-4 h-4" />}
+          label="Admin: Login Alerts"
+          description="Email admins when any user logs in"
+          value={settings.notify_admin_login}
+          onChange={(v) => updateSetting('notify_admin_login', v)}
+        />
+        <ToggleSetting
+          icon={<CheckCircle className="w-4 h-4" />}
+          label="User: Approval Notices"
+          description="Notify users when their slang is approved"
+          value={settings.notify_contribution_approved}
+          onChange={(v) => updateSetting('notify_contribution_approved', v)}
+        />
+        <ToggleSetting
+          icon={<Trophy className="w-4 h-4" />}
+          label="User: Badge Unlocked"
+          description="Notify users when they earn a new badge"
+          value={settings.notify_badge_unlocked}
+          onChange={(v) => updateSetting('notify_badge_unlocked', v)}
         />
       </SettingsSection>
 

@@ -4,7 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { PenLine, BookOpen, Trophy, Sparkles, Loader2, ClipboardList, MessageSquare } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
-import { ContributorStats } from '../lib/achievements';
+import { ContributorStats, ACHIEVEMENTS } from '../lib/achievements';
+import { sendNotification } from '../lib/notifications';
 import { useSiteSettings } from '../lib/useSiteSettings';
 import { useI18n } from '../lib/i18n';
 
@@ -70,6 +71,47 @@ export function Contribute() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const stats = contributors.find(c => c.author_id === user?.id);
+    if (!stats || !user || !appUser) return;
+
+    const STORAGE_KEY = `ban-sagar-notified-badges-${user.id}`;
+    const stored = localStorage.getItem(STORAGE_KEY);
+    const unlockedIds = ACHIEVEMENTS.filter(a => a.check(stats)).map(a => a.id);
+
+    if (!stored) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(unlockedIds));
+      return;
+    }
+
+    const notifiedBadges: string[] = JSON.parse(stored);
+    const newBadges = unlockedIds.filter(id => !notifiedBadges.includes(id));
+
+    if (newBadges.length > 0 && appUser.notify_badges !== false) {
+      supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'notify_badge_unlocked')
+        .single()
+        .then(({ data }) => {
+          if (data?.value === 'true') {
+            for (const badgeId of newBadges) {
+              const badge = ACHIEVEMENTS.find(a => a.id === badgeId);
+              if (badge) {
+                sendNotification('badge_unlocked', appUser.email, {
+                  badgeTitle: badge.title,
+                  badgeDescription: badge.description,
+                  badgeTier: badge.tier,
+                });
+              }
+            }
+          }
+        });
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(unlockedIds));
+    }
+  }, [contributors, user?.id]);
 
   const currentUserStats = contributors.find(c => c.author_id === user?.id);
   const currentUserRank = contributors.findIndex(c => c.author_id === user?.id) + 1;

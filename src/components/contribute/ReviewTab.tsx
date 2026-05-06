@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
+import { sendNotification } from '../../lib/notifications';
 
 export function ReviewTab() {
   const navigate = useNavigate();
@@ -63,7 +64,34 @@ export function ReviewTab() {
   };
 
   const handleApprove = async (id: string) => {
+    const slang = slangs.find(s => s.id === id);
     const { error } = await supabase.from('slangs').update({ status: 'approved' as SlangStatus }).eq('id', id);
+
+    if (!error && slang) {
+      try {
+        const { data: setting } = await supabase
+          .from('site_settings')
+          .select('value')
+          .eq('key', 'notify_contribution_approved')
+          .single();
+
+        if (setting?.value === 'true') {
+          const { data: author } = await supabase
+            .from('users')
+            .select('email, notify_approved')
+            .eq('id', slang.author_id)
+            .single();
+
+          if (author?.email && author.notify_approved !== false) {
+            sendNotification('contribution_approved', author.email, {
+              word: slang.word,
+              slug: slang.slug || slang.id,
+            });
+          }
+        }
+      } catch {}
+    }
+
     showMessage(error ? 'Failed to approve.' : 'Approved.', error ? 'error' : 'success');
   };
 

@@ -104,6 +104,11 @@ export const my: Record<string, string> = {
   'profile.showNsfw': 'NSFW အကြောင်းအရာ ပြသရန်',
   'profile.yourWords': 'သင့်စကားလုံးများ',
   'profile.signOut': 'ထွက်ရန်',
+  'profile.emailNotifications': 'အီးမေးလ် အသိပေးချက်များ',
+  'profile.notifyApproved': 'ပါဝင်မှု အတည်ပြုပြီး',
+  'profile.notifyApprovedDesc': 'သင့်ဗန်းစကား အတည်ပြုပြီးလျှင် အီးမေးလ် ပို့ပါ',
+  'profile.notifyBadges': 'တံဆိပ် ရရှိပြီး',
+  'profile.notifyBadgesDesc': 'တံဆိပ်အသစ် ရရှိလျှင် အသိပေးပါ',
 
   // About
   'about.title': 'Ban Sagar အကြောင်း',
