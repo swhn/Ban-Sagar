@@ -2,7 +2,7 @@
   "relation": ["delegate_permission/common.handle_all_urls"],
   "target": {
     "namespace": "android_app",
-    "package_name": "com.bansagar.app",
+    "package_name": "com.madebysai.bansagar",
     "sha256_cert_fingerprints": [
       "1B:79:01:C6:29:72:E2:80:37:65:C1:F3:8D:9E:81:5A:F7:6B:12:FD:E8:17:87:D6:73:8D:BB:0F:FB:E7:26:8D"
     ]
