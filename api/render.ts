@@ -39,20 +39,51 @@ export default async function handler(req: Request) {
   }
 
   // Static pages
-  const staticPages: Record<string, { title: string; description: string }> = {
-    '/about': { title: 'About', description: 'Learn about Ban Sagar, Myanmar\'s community-driven slang dictionary.' },
-    '/contact': { title: 'Contact', description: 'Get in touch with the Ban Sagar team. Report issues, share feedback, or suggest improvements.' },
-    '/privacy': { title: 'Privacy Policy', description: "Ban Sagar's privacy policy. Learn how we collect, use, and protect your data." },
-    '/contribute': { title: 'Contribute', description: "Contribute to Myanmar's largest slang dictionary. Add words, vote, earn badges, and climb the leaderboard." },
-    '/leaderboard': { title: 'Leaderboard', description: 'Top contributors to the Myanmar slang dictionary. See rankings, badges, and achievements.' },
+  const staticPages: Record<string, { title: string; description: string; h1: string }> = {
+    '/about': {
+      title: 'About',
+      description: 'Learn about Ban Sagar, Myanmar\'s community-driven slang dictionary.',
+      h1: 'About Ban Sagar — Myanmar Slang Dictionary',
+    },
+    '/contact': {
+      title: 'Contact',
+      description: 'Get in touch with the Ban Sagar team. Report issues, share feedback, or suggest improvements.',
+      h1: 'Contact Ban Sagar',
+    },
+    '/privacy': {
+      title: 'Privacy Policy',
+      description: "Ban Sagar's privacy policy. Learn how we collect, use, and protect your data.",
+      h1: 'Privacy Policy',
+    },
+    '/contribute': {
+      title: 'Contribute',
+      description: "Contribute to Myanmar's largest slang dictionary. Add words, vote, earn badges, and climb the leaderboard.",
+      h1: 'Contribute to Myanmar Slang Dictionary',
+    },
+    '/leaderboard': {
+      title: 'Leaderboard',
+      description: 'Top contributors to the Myanmar slang dictionary. See rankings, badges, and achievements.',
+      h1: 'Contributor Leaderboard',
+    },
   };
 
   if (staticPages[path]) {
     const page = staticPages[path];
+    const body = `
+      <header><h1>${escapeHtml(page.h1)}</h1></header>
+      <main><p>${escapeHtml(page.description)}</p></main>
+      <nav>
+        <a href="/">Home</a> |
+        <a href="/contribute">Contribute</a> |
+        <a href="/leaderboard">Leaderboard</a> |
+        <a href="/about">About</a> |
+        <a href="/contact">Contact</a>
+      </nav>
+    `;
     return renderPage(
       `${page.title} | Ban Sagar ဗန်းစကား`,
       page.description,
-      `<h1>${escapeHtml(page.title)}</h1><p>${escapeHtml(page.description)}</p>`,
+      body,
       path
     );
   }
@@ -82,12 +113,12 @@ async function renderSlangPage(supabase: any, slug: string) {
   }
 
   const pageSlug = slang.slug || slang.id;
-  const title = `${slang.word}${slang.pronunciation ? ` (${slang.pronunciation})` : ''} | Ban Sagar ဗန်းစကား`;
+  const title = `${slang.word}${slang.pronunciation ? ` (${slang.pronunciation})` : ''} — Meaning | Ban Sagar ဗန်းစကား`;
   const description = `${slang.word}: ${slang.meaning || slang.meaning_burmese || ''}`.slice(0, 160);
   const pageUrl = `/slang/${pageSlug}`;
 
   const examplesHtml = slang.examples?.length
-    ? `<h2>Examples</h2><ul>${slang.examples.map((ex: string) => `<li>${escapeHtml(ex)}</li>`).join('')}</ul>`
+    ? `<section><h2>Examples</h2><ul>${slang.examples.map((ex: string) => `<li>"${escapeHtml(ex)}"</li>`).join('')}</ul></section>`
     : '';
 
   const jsonLd = JSON.stringify([
@@ -110,20 +141,21 @@ async function renderSlangPage(supabase: any, slug: string) {
         url: BASE_URL,
       },
       url: `${BASE_URL}${pageUrl}`,
+      ...(slang.pronunciation ? { termCode: slang.pronunciation } : {}),
       ...(slang.meaning_burmese ? { alternateName: slang.meaning_burmese } : {}),
     },
   ]);
 
   const body = `
     <nav aria-label="Breadcrumb"><a href="/">Home</a> &gt; <span>${escapeHtml(slang.word)}</span></nav>
-    <article>
+    <article itemscope itemtype="https://schema.org/DefinedTerm">
       <header>
-        <h1>${escapeHtml(slang.word)} — Myanmar Slang Word</h1>
-        ${slang.pronunciation ? `<p><strong>Pronunciation:</strong> /${escapeHtml(slang.pronunciation)}/</p>` : ''}
+        <h1 itemprop="name">${escapeHtml(slang.word)} — Myanmar Slang Word</h1>
+        ${slang.pronunciation ? `<p>Pronunciation: <span itemprop="termCode">/${escapeHtml(slang.pronunciation)}/</span></p>` : ''}
       </header>
       <section>
         <h2>English Meaning</h2>
-        <p>${escapeHtml(slang.meaning || '')}</p>
+        <p itemprop="description">${escapeHtml(slang.meaning || '')}</p>
       </section>
       ${slang.meaning_burmese ? `<section><h2>Burmese Meaning (အဓိပ္ပါယ်)</h2><p>${escapeHtml(slang.meaning_burmese)}</p></section>` : ''}
       ${examplesHtml}
@@ -132,11 +164,18 @@ async function renderSlangPage(supabase: any, slug: string) {
         ${slang.author_name ? `<p>Contributed by ${escapeHtml(slang.author_name)}</p>` : ''}
       </footer>
     </article>
-    <p><a href="/">Browse more Myanmar slang words</a></p>
+    <nav>
+      <h2>Explore More</h2>
+      <ul>
+        <li><a href="/">Browse all Myanmar slang words</a></li>
+        <li><a href="/contribute">Contribute a new word</a></li>
+        <li><a href="/about">About Ban Sagar</a></li>
+      </ul>
+    </nav>
     <script type="application/ld+json">${jsonLd}</script>
   `;
 
-  const keywords = `${slang.word}, ${slang.word} meaning, ${slang.word} in English, ${slang.word} ဗန်းစကား, ${slang.word} definition`;
+  const keywords = `${slang.word}, ${slang.word} meaning, ${slang.word} in English, ${slang.word} ဗန်းစကား, ${slang.word} definition, myanmar slang`;
 
   const ogParams = new URLSearchParams({ word: slang.word });
   if (slang.meaning) ogParams.set('meaning', slang.meaning.slice(0, 150));
@@ -154,7 +193,7 @@ async function renderHomePage(supabase: any) {
     .order('created_at', { ascending: false })
     .limit(50);
 
-  const title = 'Ban Sagar (ဗန်းစကား) - Myanmar Slang Words Dictionary';
+  const title = 'Ban Sagar (ဗန်းစကား) — Myanmar Slang Words Dictionary';
   const description = 'ဗန်းစကား အဘိဓာန် — The largest Myanmar slang words dictionary. Discover, learn, and contribute to Burmese street language, colloquial expressions, and trending slang.';
 
   const wordListHtml = (slangs || []).map((s: any) => {
@@ -183,14 +222,18 @@ async function renderHomePage(supabase: any) {
       <p>${escapeHtml(description)}</p>
     </header>
     <main>
-      <h2>Myanmar Slang Words (ဗန်းစကား စာရင်း)</h2>
+      <h2>Latest Myanmar Slang Words (ဗန်းစကား စာရင်း)</h2>
       <ul>${wordListHtml}</ul>
     </main>
     <nav>
-      <a href="/contribute">Contribute</a> |
-      <a href="/leaderboard">Leaderboard</a> |
-      <a href="/about">About</a> |
-      <a href="/contact">Contact</a>
+      <h2>Quick Links</h2>
+      <ul>
+        <li><a href="/contribute">Contribute a new slang word</a></li>
+        <li><a href="/leaderboard">Contributor Leaderboard</a></li>
+        <li><a href="/about">About Ban Sagar</a></li>
+        <li><a href="/contact">Contact Us</a></li>
+        <li><a href="/privacy">Privacy Policy</a></li>
+      </ul>
     </nav>
     <script type="application/ld+json">${jsonLd}</script>
   `;
@@ -201,7 +244,7 @@ async function renderHomePage(supabase: any) {
 function renderPage(title: string, description: string, bodyContent: string, path: string, keywords?: string, ogImage?: string) {
   const canonicalUrl = `${BASE_URL}${path}`;
   const image = ogImage || `${BASE_URL}/og-image.png`;
-  const defaultKeywords = 'ဗန်းစကား, myanmar slang, burmese slang, myanmar dictionary, မြန်မာ ဗန်းစကား';
+  const defaultKeywords = 'ဗန်းစကား, myanmar slang, burmese slang, myanmar slang dictionary, myanmar dictionary, မြန်မာ ဗန်းစကား, burmese street language';
   const allKeywords = keywords ? `${keywords}, ${defaultKeywords}` : defaultKeywords;
 
   const html = `<!DOCTYPE html>
