@@ -25,6 +25,7 @@ export function AddSlang() {
   const siteSettings = useSiteSettings();
   const navigate = useNavigate();
 
+  const [now, setNow] = useState(Date.now());
   const [word, setWord] = useState('');
   const [pronunciation, setPronunciation] = useState('');
   const [meaning, setMeaning] = useState('');
@@ -65,6 +66,13 @@ export function AddSlang() {
 
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [word]);
+
+  useEffect(() => {
+    const cooldownActive = appUser?.cooldown_until && new Date(appUser.cooldown_until) > new Date();
+    if (!cooldownActive) return;
+    const interval = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(interval);
+  }, [appUser?.cooldown_until]);
 
   const isAdmin = appUser?.role === 'admin';
   const isMod = appUser?.role === 'moderator' || appUser?.role === 'admin';
@@ -212,12 +220,13 @@ export function AddSlang() {
   }
 
   // Cooldown check
-  const cooldownActive = appUser?.cooldown_until && new Date(appUser.cooldown_until) > new Date();
+  const cooldownActive = appUser?.cooldown_until && new Date(appUser.cooldown_until).getTime() > now;
   if (cooldownActive) {
-    const diff = new Date(appUser!.cooldown_until!).getTime() - Date.now();
+    const diff = new Date(appUser!.cooldown_until!).getTime() - now;
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(hours / 24);
-    const timeLeft = days > 0 ? `${days} day(s) and ${hours % 24} hour(s)` : `${hours} hour(s) and ${Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))} minute(s)`;
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const timeLeft = days > 0 ? `${days} day(s) and ${hours % 24} hour(s)` : `${hours} hour(s) and ${mins} minute(s)`;
 
     return (
       <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="max-w-md mx-auto text-center py-16">

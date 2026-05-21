@@ -26,10 +26,18 @@ export function UsersTab() {
   const [roleDropdownOpen, setRoleDropdownOpen] = useState<string | null>(null);
   const [cooldownDropdownOpen, setCooldownDropdownOpen] = useState<string | null>(null);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [, setTick] = useState(0);
 
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  useEffect(() => {
+    const hasActiveCooldowns = allUsers.some(u => u.cooldown_until && new Date(u.cooldown_until) > new Date());
+    if (!hasActiveCooldowns) return;
+    const interval = setInterval(() => setTick(t => t + 1), 30_000);
+    return () => clearInterval(interval);
+  }, [allUsers]);
 
   useEffect(() => {
     const handleClickOutside = () => {
