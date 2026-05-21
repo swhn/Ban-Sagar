@@ -19,6 +19,7 @@ const Profile = lazy(() => import('./pages/Profile').then(m => ({ default: m.Pro
 const About = lazy(() => import('./pages/About').then(m => ({ default: m.About })));
 const Contact = lazy(() => import('./pages/Contact').then(m => ({ default: m.Contact })));
 const Privacy = lazy(() => import('./pages/Privacy').then(m => ({ default: m.Privacy })));
+const AndroidApp = lazy(() => import('./pages/AndroidApp').then(m => ({ default: m.AndroidApp })));
 const NotFound = lazy(() => import('./pages/NotFound').then(m => ({ default: m.NotFound })));
 
 function ScrollToTop() {
@@ -57,6 +58,7 @@ export default function App() {
                 <Route path="privacy" element={<Privacy />} />
                 <Route path="slang/:slug" element={<SlangDetail />} />
                 <Route path="edit/:id" element={<EditSlang />} />
+                <Route path="app" element={<AndroidApp />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
