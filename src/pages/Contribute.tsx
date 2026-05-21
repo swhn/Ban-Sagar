@@ -8,6 +8,7 @@ import { ContributorStats, ACHIEVEMENTS } from '../lib/achievements';
 import { sendNotification } from '../lib/notifications';
 import { useSiteSettings } from '../lib/useSiteSettings';
 import { useI18n } from '../lib/i18n';
+import { useMeta } from '../lib/useMeta';
 
 import { AddWordTab } from '../components/contribute/AddWordTab';
 import { HistoryTab } from '../components/contribute/HistoryTab';
@@ -29,6 +30,12 @@ export function Contribute() {
 
   const isMod = appUser?.role === 'moderator' || appUser?.role === 'admin';
   const showRanking = siteSettings.show_ranking;
+
+  useMeta({
+    title: t('contribute.title'),
+    description: "Contribute to Myanmar's largest slang dictionary. Add words, vote, earn badges, and climb the leaderboard.",
+    url: '/contribute',
+  });
 
   useEffect(() => {
     if (activeTab === 'leaderboard' || activeTab === 'achievements' || activeTab === 'add') {

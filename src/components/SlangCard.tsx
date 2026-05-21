@@ -11,13 +11,15 @@ import { useI18n } from '../lib/i18n';
 
 interface SlangCardProps {
   slang: SlangData;
+  headingLevel?: 'h1' | 'h2' | 'h3';
   isModeratorView?: boolean;
   onApprove?: (id: string) => void;
   onReject?: (id: string) => void;
   onEdit?: (id: string) => void;
 }
 
-export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, onApprove, onReject, onEdit }) => {
+export const SlangCard: React.FC<SlangCardProps> = ({ slang, headingLevel = 'h3', isModeratorView, onApprove, onReject, onEdit }) => {
+  const Heading = headingLevel;
   const { user, appUser } = useAuth();
   const siteSettings = useSiteSettings();
   const { t } = useI18n();
@@ -146,9 +148,9 @@ export const SlangCard: React.FC<SlangCardProps> = ({ slang, isModeratorView, on
         <div className="flex justify-between items-start gap-3 mb-5">
           <div className="min-w-0">
             <div className="flex items-center gap-2.5">
-              <h3 className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight font-burmese">
+              <Heading className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight font-burmese">
                 {slang.word}
-              </h3>
+              </Heading>
               {slang.is_nsfw && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/15 shrink-0">
                   <AlertTriangle className="w-3 h-3" /> NSFW

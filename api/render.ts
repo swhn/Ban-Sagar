@@ -41,9 +41,10 @@ export default async function handler(req: Request) {
   // Static pages
   const staticPages: Record<string, { title: string; description: string }> = {
     '/about': { title: 'About', description: 'Learn about Ban Sagar, Myanmar\'s community-driven slang dictionary.' },
-    '/contact': { title: 'Contact', description: 'Get in touch with the Ban Sagar team.' },
-    '/privacy': { title: 'Privacy Policy', description: 'Ban Sagar\'s privacy policy.' },
-    '/contribute': { title: 'Contribute', description: 'Contribute to Myanmar\'s largest slang dictionary. Add words, vote, and earn badges.' },
+    '/contact': { title: 'Contact', description: 'Get in touch with the Ban Sagar team. Report issues, share feedback, or suggest improvements.' },
+    '/privacy': { title: 'Privacy Policy', description: "Ban Sagar's privacy policy. Learn how we collect, use, and protect your data." },
+    '/contribute': { title: 'Contribute', description: "Contribute to Myanmar's largest slang dictionary. Add words, vote, earn badges, and climb the leaderboard." },
+    '/leaderboard': { title: 'Leaderboard', description: 'Top contributors to the Myanmar slang dictionary. See rankings, badges, and achievements.' },
   };
 
   if (staticPages[path]) {
@@ -116,25 +117,33 @@ async function renderSlangPage(supabase: any, slug: string) {
   const body = `
     <nav aria-label="Breadcrumb"><a href="/">Home</a> &gt; <span>${escapeHtml(slang.word)}</span></nav>
     <article>
-      <h1>${escapeHtml(slang.word)}</h1>
-      ${slang.pronunciation ? `<p><strong>Pronunciation:</strong> /${escapeHtml(slang.pronunciation)}/</p>` : ''}
+      <header>
+        <h1>${escapeHtml(slang.word)} — Myanmar Slang Word</h1>
+        ${slang.pronunciation ? `<p><strong>Pronunciation:</strong> /${escapeHtml(slang.pronunciation)}/</p>` : ''}
+      </header>
       <section>
-        <h2>Meaning</h2>
+        <h2>English Meaning</h2>
         <p>${escapeHtml(slang.meaning || '')}</p>
-        ${slang.meaning_burmese ? `<p>${escapeHtml(slang.meaning_burmese)}</p>` : ''}
       </section>
+      ${slang.meaning_burmese ? `<section><h2>Burmese Meaning (အဓိပ္ပါယ်)</h2><p>${escapeHtml(slang.meaning_burmese)}</p></section>` : ''}
       ${examplesHtml}
       <footer>
         <p>Views: ${slang.views || 0} | Upvotes: ${slang.upvotes || 0}</p>
         ${slang.author_name ? `<p>Contributed by ${escapeHtml(slang.author_name)}</p>` : ''}
       </footer>
     </article>
+    <p><a href="/">Browse more Myanmar slang words</a></p>
     <script type="application/ld+json">${jsonLd}</script>
   `;
 
-  const keywords = `${slang.word}, ${slang.word} in English, ${slang.word} meaning, ${slang.word} ဗန်းစကား, myanmar slang, burmese slang`;
+  const keywords = `${slang.word}, ${slang.word} meaning, ${slang.word} in English, ${slang.word} ဗန်းစကား, ${slang.word} definition`;
 
-  return renderPage(title, description, body, pageUrl, keywords);
+  const ogParams = new URLSearchParams({ word: slang.word });
+  if (slang.meaning) ogParams.set('meaning', slang.meaning.slice(0, 150));
+  if (slang.pronunciation) ogParams.set('pronunciation', slang.pronunciation);
+  const ogImage = `${BASE_URL}/api/og?${ogParams.toString()}`;
+
+  return renderPage(title, description, body, pageUrl, keywords, ogImage);
 }
 
 async function renderHomePage(supabase: any) {
@@ -153,19 +162,47 @@ async function renderHomePage(supabase: any) {
     return `<li><a href="${href}"><strong>${escapeHtml(s.word)}</strong>${s.pronunciation ? ` /${escapeHtml(s.pronunciation)}/` : ''} — ${escapeHtml((s.meaning || '').slice(0, 100))}</a></li>`;
   }).join('\n');
 
+  const jsonLd = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Ban Sagar (ဗန်းစကား)',
+    alternateName: ['Myanmar Slang Words Dictionary', 'ဗန်းစကား အဘိဓာန်'],
+    url: BASE_URL,
+    description: description,
+    inLanguage: ['my', 'en'],
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: `${BASE_URL}/?q={search_term_string}`,
+      'query-input': 'required name=search_term_string',
+    },
+  });
+
   const body = `
-    <h1>Ban Sagar (ဗန်းစကား) — Myanmar Slang Words Dictionary</h1>
-    <p>${escapeHtml(description)}</p>
-    <h2>Myanmar Slang Words (ဗန်းစကား စာရင်း)</h2>
-    <ul>${wordListHtml}</ul>
-    <p><a href="/contribute">Contribute</a> | <a href="/about">About</a> | <a href="/contact">Contact</a></p>
+    <header>
+      <h1>Ban Sagar (ဗန်းစကား) — Myanmar Slang Words Dictionary</h1>
+      <p>${escapeHtml(description)}</p>
+    </header>
+    <main>
+      <h2>Myanmar Slang Words (ဗန်းစကား စာရင်း)</h2>
+      <ul>${wordListHtml}</ul>
+    </main>
+    <nav>
+      <a href="/contribute">Contribute</a> |
+      <a href="/leaderboard">Leaderboard</a> |
+      <a href="/about">About</a> |
+      <a href="/contact">Contact</a>
+    </nav>
+    <script type="application/ld+json">${jsonLd}</script>
   `;
 
   return renderPage(title, description, body, '/');
 }
 
-function renderPage(title: string, description: string, bodyContent: string, path: string, keywords?: string) {
+function renderPage(title: string, description: string, bodyContent: string, path: string, keywords?: string, ogImage?: string) {
   const canonicalUrl = `${BASE_URL}${path}`;
+  const image = ogImage || `${BASE_URL}/og-image.png`;
+  const defaultKeywords = 'ဗန်းစကား, myanmar slang, burmese slang, myanmar dictionary, မြန်မာ ဗန်းစကား';
+  const allKeywords = keywords ? `${keywords}, ${defaultKeywords}` : defaultKeywords;
 
   const html = `<!DOCTYPE html>
 <html lang="my">
@@ -174,18 +211,25 @@ function renderPage(title: string, description: string, bodyContent: string, pat
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}">
-  ${keywords ? `<meta name="keywords" content="${escapeHtml(keywords)}">` : ''}
-  <meta name="robots" content="index, follow">
+  <meta name="keywords" content="${escapeHtml(allKeywords)}">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <meta name="author" content="Ban Sagar Community">
   <link rel="canonical" href="${canonicalUrl}">
-  <meta property="og:type" content="website">
+  <meta property="og:type" content="${path.startsWith('/slang/') ? 'article' : 'website'}">
   <meta property="og:url" content="${canonicalUrl}">
   <meta property="og:title" content="${escapeHtml(title)}">
   <meta property="og:description" content="${escapeHtml(description)}">
+  <meta property="og:image" content="${image}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta property="og:site_name" content="Ban Sagar">
   <meta property="og:locale" content="my_MM">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">
+  <meta name="twitter:image" content="${image}">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 </head>
 <body>
   ${bodyContent}

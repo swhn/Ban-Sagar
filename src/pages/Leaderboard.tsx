@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Loader2, Trophy, Medal, Crown, Star, Flame, Zap, Heart, Eye, BookOpen, Sparkles, Award, Target, Rocket, TrendingUp, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import { useMeta } from '../lib/useMeta';
 
 interface ContributorStats {
   author_id: string;
@@ -101,6 +102,12 @@ export function Leaderboard() {
   const currentUserRank = contributors.findIndex(c => c.author_id === user?.id) + 1;
   const viewAchievements = selectedUser || currentUserStats;
   const unlockedAchievements = viewAchievements ? ACHIEVEMENTS.filter(a => a.check(viewAchievements)) : [];
+
+  useMeta({
+    title: 'Leaderboard',
+    description: 'Top contributors to the Myanmar slang dictionary. See rankings, badges, and achievements.',
+    url: '/leaderboard',
+  });
 
   if (loading) return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 text-indigo-500 animate-spin" /></div>;
 

@@ -6,6 +6,7 @@ import { User, Settings, LogOut, Eye, EyeOff, Loader2, CheckCircle, AlertCircle,
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { useI18n } from '../lib/i18n';
+import { useMeta } from '../lib/useMeta';
 
 export function Profile() {
   const { user, appUser, logout, toggleNsfw, isAuthReady } = useAuth();
@@ -17,6 +18,12 @@ export function Profile() {
   const [showNsfwWarning, setShowNsfwWarning] = useState(false);
   const [notifyApproved, setNotifyApproved] = useState(appUser?.notify_approved ?? true);
   const [notifyBadges, setNotifyBadges] = useState(appUser?.notify_badges ?? true);
+
+  useMeta({
+    title: t('profile.title'),
+    description: 'Manage your Ban Sagar profile, display name, and notification preferences.',
+    url: '/profile',
+  });
 
   const toggleNotification = async (key: 'notify_approved' | 'notify_badges', currentValue: boolean) => {
     const newValue = !currentValue;

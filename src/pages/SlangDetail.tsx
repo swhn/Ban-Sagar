@@ -291,7 +291,7 @@ export function SlangDetail() {
         </button>
       </div>
 
-      <SlangCard slang={slang} />
+      <SlangCard slang={slang} headingLevel="h1" />
 
       {/* Related Words */}
       {relatedWords.length > 0 && (
