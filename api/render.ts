@@ -65,6 +65,11 @@ export default async function handler(req: Request) {
       description: 'Top contributors to the Myanmar slang dictionary. See rankings, badges, and achievements.',
       h1: 'Contributor Leaderboard',
     },
+    '/app': {
+      title: 'Android App',
+      description: 'Download Ban Sagar for Android — Browse, search, and contribute to Myanmar\'s largest slang dictionary on the go.',
+      h1: 'Ban Sagar Android App — Myanmar Slang Dictionary',
+    },
   };
 
   if (staticPages[path]) {
