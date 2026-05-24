@@ -13,17 +13,17 @@
     { "source": "/api/(.*)", "destination": "/api/$1" },
     {
       "source": "/slang/:slug",
-      "has": [{ "type": "header", "key": "user-agent", "value": "(?i).*(bot|spider|crawl|slurp|archive|facebook|twitter|linkedin|whatsapp|telegram|discord|semrush|ahrefs|lighthouse|pagespeed|seobility|screaming|moz|majestic|sistrix|serpstat|ubersuggest|preview|embed|fetch|scrape|check|monitor|analyz|validat|curl|wget|python|java\\/|ruby|perl|php|go-http|node-fetch|axios|postman|insomnia|httpie).*" }],
+      "has": [{ "type": "header", "key": "user-agent", "value": "(?i).*(bot|spider|crawl|slurp|archive|facebook|twitter|linkedin|whatsapp|telegram|discord|semrush|ahrefs|lighthouse|pagespeed|seobility|screaming|dotbot|rogerbot|majestic|sistrix|serpstat|ubersuggest|preview|embed|fetch|scrape|check|monitor|analyz|validat|curl|wget|python|java\\/|ruby|perl|php|go-http|node-fetch|axios|postman|insomnia|httpie).*" }],
       "destination": "/api/render?path=/slang/:slug"
     },
     {
       "source": "/",
-      "has": [{ "type": "header", "key": "user-agent", "value": "(?i).*(bot|spider|crawl|slurp|archive|facebook|twitter|linkedin|whatsapp|telegram|discord|semrush|ahrefs|lighthouse|pagespeed|seobility|screaming|moz|majestic|sistrix|serpstat|ubersuggest|preview|embed|fetch|scrape|check|monitor|analyz|validat|curl|wget|python|java\\/|ruby|perl|php|go-http|node-fetch|axios|postman|insomnia|httpie).*" }],
+      "has": [{ "type": "header", "key": "user-agent", "value": "(?i).*(bot|spider|crawl|slurp|archive|facebook|twitter|linkedin|whatsapp|telegram|discord|semrush|ahrefs|lighthouse|pagespeed|seobility|screaming|dotbot|rogerbot|majestic|sistrix|serpstat|ubersuggest|preview|embed|fetch|scrape|check|monitor|analyz|validat|curl|wget|python|java\\/|ruby|perl|php|go-http|node-fetch|axios|postman|insomnia|httpie).*" }],
       "destination": "/api/render?path=/"
     },
     {
       "source": "/:path(about|contact|contribute|privacy|leaderboard|app)",
-      "has": [{ "type": "header", "key": "user-agent", "value": "(?i).*(bot|spider|crawl|slurp|archive|facebook|twitter|linkedin|whatsapp|telegram|discord|semrush|ahrefs|lighthouse|pagespeed|seobility|screaming|moz|majestic|sistrix|serpstat|ubersuggest|preview|embed|fetch|scrape|check|monitor|analyz|validat|curl|wget|python|java\\/|ruby|perl|php|go-http|node-fetch|axios|postman|insomnia|httpie).*" }],
+      "has": [{ "type": "header", "key": "user-agent", "value": "(?i).*(bot|spider|crawl|slurp|archive|facebook|twitter|linkedin|whatsapp|telegram|discord|semrush|ahrefs|lighthouse|pagespeed|seobility|screaming|dotbot|rogerbot|majestic|sistrix|serpstat|ubersuggest|preview|embed|fetch|scrape|check|monitor|analyz|validat|curl|wget|python|java\\/|ruby|perl|php|go-http|node-fetch|axios|postman|insomnia|httpie).*" }],
       "destination": "/api/render?path=/:path"
     },
     { "source": "/((?!assets|fonts|favicon|og-image|robots|sitemap|\\.well-known).*)", "destination": "/index.html" }
