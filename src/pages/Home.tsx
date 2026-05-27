@@ -42,9 +42,9 @@ export function Home() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isFocused, setIsFocused] = useState(false);
-  const [activeTab, setActiveTab] = useState<SortTab>('trending');
+  const [activeTab, setActiveTab] = useState<SortTab>('random');
   const [trendingPeriod, setTrendingPeriod] = useState<TrendingPeriod>('day');
-  const [randomSeed, setRandomSeed] = useState(0);
+  const [randomSeed, setRandomSeed] = useState(Math.random());
   const searchRef = useRef<HTMLDivElement>(null);
   const [announcementDismissed, setAnnouncementDismissed] = useState(false);
 
@@ -245,10 +245,10 @@ export function Home() {
           {/* Main tabs - scrollable on mobile */}
           <div className="flex gap-1 overflow-x-auto no-scrollbar pb-1 -mx-1 px-1">
             {([
-              { key: 'trending', label: t('home.tabs.trending'), icon: TrendingUp },
-              { key: 'latest', label: t('home.tabs.latest'), icon: Clock },
-              { key: 'most_upvote', label: t('home.tabs.top'), icon: ThumbsUp },
               { key: 'random', label: t('home.tabs.random'), icon: Shuffle },
+              { key: 'trending', label: t('home.tabs.trending'), icon: TrendingUp },
+              { key: 'most_upvote', label: t('home.tabs.top'), icon: ThumbsUp },
+              { key: 'latest', label: t('home.tabs.latest'), icon: Clock },
             ] as const).map(({ key, label, icon: Icon }) => (
               <button
                 key={key}
